@@ -1,0 +1,124 @@
+<!doctype html>
+<html>
+	<head>
+		<title>some page</title>
+		<meta charset="utf8">
+		<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+		<!-- script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script -->
+		<link rel="stylesheet" href="generic_styles.css">
+		<link rel="stylesheet" href="style.css">
+	</head>
+	<body onload="app.resize(); setTimeout(()=>app.setState('search'),300);" onresize="app.resize()">
+		<div id="outer" class="relative document-height document-width">
+			<div id="card1" class="document-height document-width absolute" v-bind:class="card1classes">
+				<div id="crop1_1" v-bind:class="crop1_1classes">
+					<img id="adidas-name" src="adidas-logo.jpg" class="centered relative">
+				</div>
+				<div id="crop1_2" v-bind:class="crop1_2classes">
+					<div id="search-container" class="centered relative document-width-6">
+						<input id="search-field" contenteditable="true" v-bind:placeholder="searchPlaceholder"></input>
+						<div id="search-submit" class="text-center pointer" v-on:click="setQuery()">{{searchButtonText}}</div>
+						<div id="search-prefix">e.g.</div>
+						<div id="search-example-1" class="pointer" v-on:click="setSearchField(searchExample[0])">{{searchExample[0]}}</div>
+						<div id="search-example-2" class="pointer" v-on:click="setSearchField(searchExample[1])">{{searchExample[1]}}</div>
+					</div>
+				</div>
+			</div>
+			
+			<div id="card2" class="document-height document-width absolute" v-bind:class="card2classes">
+				<div id="crop2_1" class="flex-4">
+					<div id="crop2_1_1" class="centered relative document-width-2">
+						<img v-bind:src="current_gender.src" id="gender-image" class="document-width-2">
+						<div id="crop2_1_1_2" class="text-center">Shoe size: {{current_gender.shoe_size[0]}} - {{current_gender.shoe_size[1]}}</div>
+					</div>
+				</div>
+				<div id="crop2_2" class="flex-8">
+					<div id="crop2_2_1" class="document-height-2">
+						<div class="relative centered text-center">
+							Shoes for:
+						</div>
+					</div>
+					<div class="blockContainer horizontal-center relative document-height-7 document-width-6">
+						<div class="block text-center pointer flex-space-content" v-bind:class="{hover:gender.hover}" v-for="gender in genders" v-on:mouseenter="peekGender(gender)" v-on:click="setGender(gender)">{{gender.name}}</div>
+					</div>
+				</div>
+			</div>
+						
+			<div id="card3" class="document-height document-width absolute" v-bind:class="card3classes">
+				<div id="crop3_1" class="flex-4">
+					<div class="centered relative">
+						<div id="crop3_1_1">{{current_preference.name}}</div>
+						<div id="crop3_1_2">{{current_preference.description}}</div>
+					</div>
+				</div>
+				<div id="crop3_2" class="flex-8">
+					<div id="crop3_2_1" class="document-height-2">
+						<div class="relative centered text-center">
+							Sort Shoes based on:
+						</div>
+					</div>
+					<div class="blockContainer document-height-8 document-width-6 relative horizontal-center">
+						<div class="block text-center flex-end" v-for="preference in preferences" v-on:mouseenter="peekPreference(preference)" v-on:mouseleave="unpeekPreference(preference)" v-on:click="setPreference(preference)" v-bind:class="{pointer:preference.real}">
+							<div v-if="preference.show_shoe" class="relative shoeImageContainer">
+								<img class="shoeImage" v-bind:src="preference.current_preview.src">
+							</div>
+							<div v-else style="transition:all 0s; width:100%;height:100%">
+								<div class="relative centered">{{preference.name}}</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			
+			<div id="card4" class="document-height document-width absolute" v-bind:class="card4classes">
+				<div id="crop4_1" class="flex-4">
+					<div id="crop4_1_1" class="horizontal-center relative">
+						<div id="crop4_1_1_1" class="relative horizontal-center">{{current_shoe.name}}</div>
+						<div id="crop4_1_1_2" class="relative horizontal-center document-height-1">{{current_shoe.price_text}}</div>
+						<div class="crop4_1_1_3" v-for="bullet in current_shoe.bullets">{{bullet}}</div>
+					</div>
+				</div>
+				<div id="crop4_2" class="flex-8">
+					<div id="crop4_2_1" class="document-height-2">
+						<div class="relative centered text-center pointer" v-if="recommend" v-on:click="showWishlist">
+							Wishlist ({{wishlistLength}})
+						</div>
+						<div class="relative centered text-center pointer" v-else v-on:click="showRecommendations">
+							Recommendations
+						</div>
+					</div>
+					<div class="blockContainer document-height-8 document-width-6 relative horizontal-center">
+						<div class="block text-center flex-end" v-bind:class="{hover:shoe.hover,pointer:shoe.real}" v-for="shoe in user.queue" v-on:mouseleave="function(ev){unpeekShoe(shoe,ev);}" v-on:mousemove="function(ev){peekShoe(shoe,ev);}" v-on:click="function(ev){handleClick(shoe,ev);}">
+							<div class="relative shoeImageContainer">
+								<img class="shoeImage" v-bind:src="shoe.src">
+								<div>
+									<div v-if="shoe.click_text.l">
+										<span class="big_text">{{shoe.click_text.left}}</span>
+										<span>  {{shoe.click_text.text}}  </span>
+										<span class="small_text">{{shoe.click_text.right}}</span>
+									</div>
+									<div v-if="shoe.click_text.r">
+										<span class="small_text">{{shoe.click_text.left}}</span>
+										<span>  {{shoe.click_text.text}}  </span>
+										<span class="big_text">{{shoe.click_text.right}}</span>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div id="crop4_2_3" class="document-height-2">
+						<div class="relative centered text-center small_text">
+							<div v-if="!recommend" style="width:100%;display:flex;" class="flex-space-content">
+								<span style="color:white;">New Search</span>
+								<span v-bind:class="buyButtonClasses" v-on:click="buyShoes" >Buy Shoes ({{wishlistLength}})</span>
+								<span class="pointer" v-on:click="newSearch">New Search</span>
+							</div>
+							<div v-if="recommend" v-bind:class="improveButtonClasses" v-on:click="improveSearch">Improve Search Results</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<script src="script.js" type="application/javascript"></script>
+	</body>
+</html>

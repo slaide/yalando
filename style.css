@@ -1,0 +1,213 @@
+
+*{
+    border: 0;
+    padding: 0;
+    margin: 0;
+    user-select:none;
+    font-family: sans-serif;
+	transition: all 0.3s;
+	overflow: hidden;
+}
+.right-out,.right-out-static{
+    transform: translateX(var(--document-width));
+}
+.pos{
+    transform: translateX(calc(var(--document-width)/-3));
+    transition: transform 0.5s;
+}
+.focus{
+    transform: translateX(calc(var(--document-width)/3));
+    transition: transform 0.5s;
+}
+.left-out-static,.left-out{
+    left: -100%;
+}
+.left-out,.right-out{
+    transition: transform 0.5s;
+}
+
+#card1{
+	display: flex;
+}
+#crop1_1{
+	background-color: black;
+}
+#crop1_2{
+	background-color: white;
+}
+
+#card2{
+	display: flex;
+}
+#crop2_1{
+	background-color: black;
+}
+#crop2_2_1{
+	font-size: calc(var(--document-width)/100*2.8);
+}
+#crop2_1_1_2{
+	padding-top: calc(var(--document-width)/100*3);
+	color:white;
+	font-size: calc(var(--document-width)/100*2);
+}
+#crop2_2{
+	background-color: white;
+}
+
+#card3{
+	display: flex;
+}
+#crop3_1{
+	background-color: black;
+	color: white;
+}
+#crop3_1_1{
+	font-size: calc(var(--document-width)/100*6);
+	padding-bottom: calc(var(--document-width)/100*3);
+}
+#crop3_1_2{
+	font-size: calc(var(--document-width)/100*2.2);
+	padding-left: calc(var(--document-width)/100*1);
+	padding-right: calc(var(--document-width)/100*1);
+}
+#crop3_2{
+	background-color: white;
+	padding-right: calc(var(--document-width)/100*2.2);
+}#crop3_2_1{
+	font-size: calc(var(--document-width)/100*2.8);
+}
+
+#card4{
+	display: flex;
+}
+#crop4_1{
+	background-color: black;
+	color: white;
+	overflow:scroll;
+}
+#crop4_1_1{
+	padding-left: calc(var(--document-width)/100*1);
+	padding-right: calc(var(--document-width)/100*1);
+}
+#crop4_1_1_1{
+	font-size: calc(var(--document-width)/100*2.9);
+	word-break:break-word;
+	hyphens:auto;
+	padding-top: calc(var(--document-width)/100*2.0);
+}
+#crop4_1_1_2{
+	font-size: calc(var(--document-width)/100*1.5);
+}
+.crop4_1_1_3{
+	font-size: calc(var(--document-width)/100*1.8);
+	padding-bottom:calc(var(--document-height)/100*1.4);
+}
+
+
+#crop4_2_1,#crop4_2_3{
+	font-size: calc(var(--document-width)/100*2.8);
+}
+
+#adidas-name{
+    color: white;
+    width: auto;
+}
+#outer{
+    overflow: hidden;
+}
+
+#search-container{
+    display: grid;
+    grid-template-rows: auto auto auto;
+    grid-template-columns: repeat(6,auto);
+	font-size: calc(var(--document-width)/100*2.2);
+}
+#search-field{
+    grid-column-start: 1;
+    grid-column-end: 6;
+    background-color: white;
+	border-bottom: 0.1em solid black;
+	user-select: text;
+	font-size: inherit;
+}
+#search-submit{
+    color: white;
+    background-color: black;
+	border-bottom: 0.1em solid black;
+}
+#search-example-1,#search-example-2{
+    grid-column-start: 2;
+    grid-column-end: 6;
+}
+#search-prefix,#search-example-1,#search-example-2{
+    color: black;
+    background-color: white;
+}
+#search-prefix{
+    text-align: right;
+}
+#search-prefix,#search-example-1,#search-example-2,#search-submit,#search-field{
+    padding: 0.2em;
+}
+#search-example-2{
+    padding-top: 0;
+}
+#personContainer{
+    overflow: show;
+    display: grid;
+    grid-template-columns: repeat(2,50%);
+    grid-template-rows: repeat(3,calc(100%/3));
+}
+.person{
+    color: black;
+    font-size: 5em;
+}
+
+#gender-image{
+	filter:invert(1);
+}
+
+.blockContainer{
+	display: grid;
+	grid-template-columns: repeat(3,calc(100%/3));
+	grid-template-rows: repeat(2,50%);
+	font-size: calc(var(--document-width)/100*3);
+}
+.block{
+	background-color:white;
+	color:black;
+	display: flex;
+	max-width: 100%;
+	max-height: 100%;
+	transition: all 0s;
+}
+.block.hover{
+	background-color:black;
+	color:white;
+}
+.shoeImageContainer{
+	font-size: 50%;
+	width:100%;
+	position: relative;
+	bottom:0;
+}
+.shoeImage{
+	width: 95%;
+	height: auto;
+	max-height: 100%;
+	bottom: 0.5em;
+}
+.big_text{
+	transition: all 0s;
+    font-size: 115%;
+}
+.small_text{
+	transition: all 0s;
+    font-size: 80%;
+}
+.black{
+	color:black;
+}
+.grey{
+	color:grey;
+}
