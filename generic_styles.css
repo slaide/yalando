@@ -1,0 +1,252 @@
+
+.vertical-center{
+    top: 50%;
+    transform: translateY(-50%);
+}
+.horizontal-center{
+    left: 50%;
+    transform: translateX(-50%);
+}
+.centered{
+    top: 50%;
+    left: 50%;
+    transform: translateX(-50%) translateY(-50%);
+}
+.relative{
+    position: relative;
+}
+.absolute{
+    position: absolute;
+}
+.text-center{
+    text-align: center;
+}
+.pointer{
+    cursor: pointer;
+}
+
+.document-height-1{
+    height: calc(var(--document-height)*1/12);
+}
+.document-height-2{
+    height: calc(var(--document-height)*2/12);
+}
+.document-height-3{
+    height: calc(var(--document-height)*3/12);
+}
+.document-height-4{
+    height: calc(var(--document-height)*4/12);
+}
+.document-height-5{
+    height: calc(var(--document-height)*5/12);
+}
+.document-height-6{
+    height: calc(var(--document-height)*6/12);
+}
+.document-height-7{
+    height: calc(var(--document-height)*7/12);
+}
+.document-height-8{
+    height: calc(var(--document-height)*8/12);
+}
+.document-height-9{
+    height: calc(var(--document-height)*9/12);
+}
+.document-height-10{
+    height: calc(var(--document-height)*10/12);
+}
+.document-height-11{
+    height: calc(var(--document-height)*11/12);
+}
+.document-height-12{
+    height: calc(var(--document-height)*12/12);
+}
+.document-height{
+    height: var(--document-height);
+}
+.document-width{
+    width: var(--document-width);
+}
+.document-width-1{
+    width: calc(var(--document-width)*1/12);
+}
+.document-width-2{
+    width: calc(var(--document-width)*2/12);
+}
+.document-width-3{
+    width: calc(var(--document-width)*3/12);
+}
+.document-width-4{
+    width: calc(var(--document-width)*4/12);
+}
+.document-width-5{
+    width: calc(var(--document-width)*5/12);
+}
+.document-width-6{
+    width: calc(var(--document-width)*6/12);
+}
+.document-width-7{
+    width: calc(var(--document-width)*7/12);
+}
+.document-width-8{
+    width: calc(var(--document-width)*8/12);
+}
+.document-width-9{
+    width: calc(var(--document-width)*9/12);
+}
+.document-width-10{
+    width: calc(var(--document-width)*10/12);
+}
+.document-width-11{
+    width: calc(var(--document-width)*11/12);
+}
+.document-width-12{
+    width: calc(var(--document-width)*12/12);
+}
+
+.flex-0{
+    flex: 0;
+}
+.flex-1{
+    flex: 1;
+}
+.flex-2{
+    flex: 2;
+}
+.flex-3{
+    flex: 3;
+}
+.flex-4{
+    flex: 4;
+}
+.flex-5{
+    flex: 5;
+}
+.flex-6{
+    flex: 6;
+}
+.flex-7{
+    flex: 7;
+}
+.flex-8{
+    flex: 8;
+}
+.flex-9{
+    flex: 9;
+}
+.flex-10{
+    flex: 10;
+}
+.flex-11{
+    flex: 11;
+}
+.flex-12{
+    flex: 12;
+}
+
+.z1{
+    z-index: 1;
+}
+.z2{
+    z-index: 2;
+}
+.z3{
+    z-index: 3;
+}
+.z4{
+    z-index: 4;
+}
+.z5{
+    z-index: 5;
+}
+.z6{
+    z-index: 6;
+}
+
+.left-0{
+    left: calc(var(--document-width)*0/12);
+}
+.left-1{
+    left: calc(var(--document-width)*1/12);
+}
+.left-2{
+    left: calc(var(--document-width)*2/12);
+}
+.left-3{
+    left: calc(var(--document-width)*3/12);
+}
+.left-4{
+    left: calc(var(--document-width)*4/12);
+}
+.left-5{
+    left: calc(var(--document-width)*5/12);
+}
+.left-6{
+    left: calc(var(--document-width)*6/12);
+}
+.left-7{
+    left: calc(var(--document-width)*7/12);
+}
+.left-8{
+    left: calc(var(--document-width)*8/12);
+}
+.left-9{
+    left: calc(var(--document-width)*9/12);
+}
+.left-10{
+    left: calc(var(--document-width)*10/12);
+}
+.left-11{
+    left: calc(var(--document-width)*11/12);
+}
+.left-12{
+    left: calc(var(--document-width)*12/12);
+}
+
+.-left-1{
+    left: calc(var(--document-width)*1/-12);
+}
+.-left-2{
+    left: calc(var(--document-width)*2/-12);
+}
+.-left-3{
+    left: calc(var(--document-width)*3/-12);
+}
+.-left-4{
+    left: calc(var(--document-width)*4/-12);
+}
+.-left-5{
+    left: calc(var(--document-width)*5/-12);
+}
+.-left-6{
+    left: calc(var(--document-width)*6/-12);
+}
+.-left-7{
+    left: calc(var(--document-width)*7/-12);
+}
+.-left-8{
+    left: calc(var(--document-width)*8/-12);
+}
+.-left-9{
+    left: calc(var(--document-width)*9/-12);
+}
+.-left-10{
+    left: calc(var(--document-width)*10/-12);
+}
+.-left-11{
+    left: calc(var(--document-width)*11/-12);
+}
+.-left-12{
+    left: calc(var(--document-width)*12/-12);
+}
+
+.flex-end{
+    align-items: flex-end;
+}
+.flex-start{
+    align-items: flex-start;
+}
+.flex-space-content{
+	align-items: center;
+	justify-content: space-around;
+}

@@ -10,7 +10,7 @@ function shuffleArray(array) {
     }
 }
 var hostname = '127.0.0.1';
-var port = 3000;
+var port = process.env.PORT || 3000;
 var utf8 = { encoding: "utf8" };
 var binary = { encoding: "binary" };
 var htmlContent = { "Content-Type": "text/html" };
