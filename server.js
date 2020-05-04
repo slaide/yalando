@@ -793,7 +793,11 @@ var server = http.createServer(function (request, response) {
     var query = querystring.parse(userurl.query);
     //console.log("path:",userurl.pathname);
     try {
-        responseMap[userurl.pathname](response, request);
+        if (responseMap[userurl.pathname]){
+                responseMap[userurl.pathname](response, request);
+        }else{
+            throw "";
+        }
     }
     catch (e) {
         if (userurl.pathname.slice(-4) == ".png") {
