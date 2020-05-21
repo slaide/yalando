@@ -52,6 +52,7 @@
 }
 #crop2_2{
 	background-color: white;
+	padding-right: calc(var(--document-width)/100*2.2);
 }
 
 #card3{
@@ -73,7 +74,8 @@
 #crop3_2{
 	background-color: white;
 	padding-right: calc(var(--document-width)/100*2.2);
-}#crop3_2_1{
+}
+#crop3_2_1{
 	font-size: calc(var(--document-width)/100*2.8);
 }
 
@@ -90,17 +92,39 @@
 	padding-right: calc(var(--document-width)/100*1);
 }
 #crop4_1_1_1{
-	font-size: calc(var(--document-width)/100*2.9);
+	font-size: calc(var(--document-height)/100*5);
 	word-break:break-word;
 	hyphens:auto;
-	padding-top: calc(var(--document-width)/100*2.0);
+	padding-top: calc(var(--document-height)/100*2.0);
 }
 #crop4_1_1_2{
-	font-size: calc(var(--document-width)/100*1.5);
+	font-size: calc(var(--document-height)/100*3);
 }
-.crop4_1_1_3{
-	font-size: calc(var(--document-width)/100*1.8);
-	padding-bottom:calc(var(--document-height)/100*1.4);
+#crop4_1_1_3,#crop4_1_1_4{
+  padding-top:2em;
+}
+#crop4_1_1_4{
+  padding-bottom:calc(var(--document-height)/100*3.5);
+}
+.crop4_1_1_3_1,.crop4_1_1_4_1{
+	font-size: calc(var(--document-height)/100*4.0);
+	padding-bottom:calc(var(--document-height)/100*3);
+}
+.crop4_1_1_3_2,.crop4_1_1_4_2{
+  list-style-type:disc;
+  list-style-position:outside;
+  padding-left:calc(var(--document-width)/100*1.5);
+  display:block;
+}
+.crop4_1_1_3_2_1,.crop4_1_1_4_2_1{
+  font-size: calc(var(--document-height)/100*3);
+  display:list-item;
+  padding-bottom:calc(var(--document-height)/100*1.25);
+}
+#crop4_1_1_5{
+	font-size: calc(var(--document-height)/100*3.5);
+  padding-top: calc(var(--document-height)/100*2.0);
+	padding-bottom: calc(var(--document-height)/100*2.0);
 }
 
 
@@ -117,15 +141,15 @@
 }
 
 #search-container{
-    display: grid;
-    grid-template-rows: auto auto auto;
-    grid-template-columns: repeat(6,auto);
+  display: grid;
+  grid-template-rows: auto auto auto;
+  grid-template-columns: repeat(6,auto);
 	font-size: calc(var(--document-width)/100*2.2);
 }
 #search-field{
-    grid-column-start: 1;
-    grid-column-end: 6;
-    background-color: white;
+  grid-column-start: 1;
+  grid-column-end: 6;
+  background-color: white;
 	border-bottom: 0.1em solid black;
 	user-select: text;
 	font-size: inherit;
@@ -165,6 +189,10 @@
 
 #gender-image{
 	filter:invert(1);
+}
+.standalone-search-button{
+  float:right;
+	font-size: calc(var(--document-width)/100*2.8);
 }
 
 .blockContainer{

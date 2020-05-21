@@ -8,7 +8,7 @@
 		<link rel="stylesheet" href="generic_styles.css">
 		<link rel="stylesheet" href="style.css">
 	</head>
-	<body onload="app.resize(); setTimeout(()=>app.setState('search'),300);" onresize="app.resize()">
+	<body onload="app.resize(); setTimeout(()=>{app.setState('search');app.tryShoeId();},300);" onresize="app.resize()">
 		<div id="outer" class="relative document-height document-width">
 			<div id="card1" class="document-height document-width absolute" v-bind:class="card1classes">
 				<div id="crop1_1" v-bind:class="crop1_1classes">
@@ -24,7 +24,7 @@
 					</div>
 				</div>
 			</div>
-			
+
 			<div id="card2" class="document-height document-width absolute" v-bind:class="card2classes">
 				<div id="crop2_1" class="flex-4">
 					<div id="crop2_1_1" class="centered relative document-width-2">
@@ -38,17 +38,25 @@
 							Shoes for:
 						</div>
 					</div>
-					<div class="blockContainer horizontal-center relative document-height-7 document-width-6">
+					<div class="blockContainer horizontal-center relative document-height-8 document-width-6">
 						<div class="block text-center pointer flex-space-content" v-bind:class="{hover:gender.hover}" v-for="gender in genders" v-on:mouseenter="peekGender(gender)" v-on:click="setGender(gender)">{{gender.name}}</div>
+					</div>
+					<div class="document-height-2">
+						<div style="height:100%;" class="relative standalone-search-button ">
+							<div class="relative pointer small_text vertical-center" v-on:click="newSearch">New Search</div>
+						</div>
 					</div>
 				</div>
 			</div>
-						
+
 			<div id="card3" class="document-height document-width absolute" v-bind:class="card3classes">
 				<div id="crop3_1" class="flex-4">
 					<div class="centered relative">
 						<div id="crop3_1_1">{{current_preference.name}}</div>
-						<div id="crop3_1_2">{{current_preference.description}}</div>
+						<div id="crop3_1_2">
+							<span v-if="current_preference.randomized">Due to insufficient data, these results are randomized, for your current search.</span>
+							<span v-else>{{current_preference.description}}</span>
+						</div>
 					</div>
 				</div>
 				<div id="crop3_2" class="flex-8">
@@ -67,15 +75,32 @@
 							</div>
 						</div>
 					</div>
+					<div class="document-height-2">
+						<div style="height:100%;" class="relative standalone-search-button ">
+							<div class="relative pointer small_text vertical-center" v-on:click="newSearch">New Search</div>
+						</div>
+					</div>
 				</div>
 			</div>
-			
+
 			<div id="card4" class="document-height document-width absolute" v-bind:class="card4classes">
 				<div id="crop4_1" class="flex-4">
 					<div id="crop4_1_1" class="horizontal-center relative">
 						<div id="crop4_1_1_1" class="relative horizontal-center">{{current_shoe.name}}</div>
 						<div id="crop4_1_1_2" class="relative horizontal-center document-height-1">{{current_shoe.price_text}}</div>
-						<div class="crop4_1_1_3" v-for="bullet in current_shoe.bullets">{{bullet}}</div>
+						<div id="crop4_1_1_3">
+							<div class="crop4_1_1_3_1">Manufacturer Description</div>
+							<ul class="crop4_1_1_3_2">
+								<li class="crop4_1_1_3_2_1" v-for="bullet in current_shoe.bullets">{{bullet}}</li>
+							</ul>
+						</div>
+						<div id="crop4_1_1_4">
+							<div class="crop4_1_1_4_1">Common Words used in Reviews</div>
+							<ul class="crop4_1_1_4_2">
+								<li class="crop4_1_1_4_2_1" v-for="word in current_shoe.words">{{word}}</li>
+							</ul>
+						</div>
+						<div id="crop4_1_1_5" class="pointer" v-on:click="proposeIdSearch(current_shoe.id)">ID: {{current_shoe.id}}</div>
 					</div>
 				</div>
 				<div id="crop4_2" class="flex-8">
@@ -88,7 +113,7 @@
 						</div>
 					</div>
 					<div class="blockContainer document-height-8 document-width-6 relative horizontal-center">
-						<div class="block text-center flex-end" v-bind:class="{hover:shoe.hover,pointer:shoe.real}" v-for="shoe in user.queue" v-on:mouseleave="function(ev){unpeekShoe(shoe,ev);}" v-on:mousemove="function(ev){peekShoe(shoe,ev);}" v-on:click="function(ev){handleClick(shoe,ev);}">
+						<div class="block text-center flex-end" v-bind:key="shoe.id" v-bind:class="{hover:shoe.hover,pointer:shoe.real}" v-for="shoe in user.queue" v-on:mouseleave="function(ev){unpeekShoe(shoe,ev);}" v-on:mousemove="function(ev){peekShoe(shoe,ev);}" v-on:click="function(ev){handleClick(shoe,ev);}">
 							<div class="relative shoeImageContainer">
 								<img class="shoeImage" v-bind:src="shoe.src">
 								<div>

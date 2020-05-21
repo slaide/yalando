@@ -75,6 +75,39 @@ responseMap["/shoe.jpg"]=function(response:typeof http.ServerResponse,request:ty
 	response.end(fs.readFileSync("shoe.jpg"),binary);
 };
 
+function shoe_fits_gender(shoe,gender){
+  switch (gender){
+    case "Woman":{
+      if((shoe.gender!="FEMALE" && shoe.gender!="UNISEX") || shoe.age!="A") return false;
+      break;
+    }
+    case "Man":{
+      if((shoe.gender!="MALE" && shoe.gender!="UNISEX") || shoe.age!="A") return false;
+      break;
+    }
+    case "Adult":{
+      if(shoe.age!="A") return false;
+      break;
+    }
+    case "Girl":{
+      if((shoe.gender!="FEMALE" && shoe.gender!="UNISEX") || (shoe.age!="J" && shoe.age!="I" && shoe.age!="K")) return false;
+      break;
+    }
+    case "Boy":{
+      if((shoe.gender!="MALE" && shoe.gender!="UNISEX") || (shoe.age!="J" && shoe.age!="I" && shoe.age!="K")) return false;
+      break;
+    }
+    case "Child":{
+      if(shoe.age!="J" && shoe.age!="I" && shoe.age!="K") return false;
+      break;
+    }
+    default: {
+      throw Error("unknown gender? "+gender);
+    }
+  }
+  return true;
+}
+
 function init_shoes(){
 
     let shoes_ret={};
@@ -104,7 +137,7 @@ function init_shoes(){
 
 	    let shoes=[];
 	    for (const d of meta_data){
-	        let shoe={id:d.SARTICLENO,name:d.SARTICLENAME,price:d.PRICE,age:d.AGE,gender:d.GENDER,category:d.CATEGORY,color:d.BASE_COLOR,bullets:[],image_embeddings:[],review_embeddings:[],interaction_embeddings:[]};
+	        let shoe={id:d.SARTICLENO,name:d.SARTICLENAME,price:d.PRICE,age:d.AGE,gender:d.GENDER,category:d.CATEGORY,color:d.BASE_COLOR,bullets:[],image_embeddings:[],review_embeddings:{},interaction_embeddings:[]};
 	        for (const b of ["SBULLET1","SBULLET2","SBULLET3","SBULLET4","SBULLET5","SBULLET6","SBULLET7"]){
 	            if (d[b].length>0){
 	                shoe.bullets.push(d[b]);
@@ -114,13 +147,12 @@ function init_shoes(){
 	        if(shoe.bullets.length>0) shoes.push(shoe);
 	    }
 
-			console.log(shoes.length);
-
+      //parse shoes from array into hashmap (lookup by id)
 	    for (let s_i=0; s_i<shoes.length; s_i++){
 	        shoes_ret[shoes[s_i].id]=shoes[s_i];
 	    }
 
-			console.log(Object.keys(shoes_ret).length);
+			console.log("#shoes with metadata",Object.keys(shoes_ret).length);
 
 	    for (const d_i in image_embeddings){
 	        const d=image_embeddings[d_i];
@@ -137,7 +169,7 @@ function init_shoes(){
 			for(const key of shoe_keys){
 				if (shoes_ret[key].image_embeddings.length<1) delete shoes_ret[key];
 			}
-			console.log(Object.keys(shoes_ret).length);
+			console.log("#shoes with image embeddings",Object.keys(shoes_ret).length);
 
       for (const d_i in review_embeddings){
           const d=review_embeddings[d_i];
@@ -150,25 +182,29 @@ function init_shoes(){
           }
       }
 
+      //fetch list of review words from first shoe where there are at least some review words
 			shoe_keys=Object.keys(shoes_ret);
 			let review_keys_list=[];
 			for(const key of shoe_keys){
 				const review_keys=Object.keys(shoes_ret[key].review_embeddings);
-				if (review_keys.length<1){
-					//delete shoes_ret[key];
-				}else{
-					if (review_keys_list.length==0) review_keys_list=review_keys;
+				if (review_keys.length>=1){
+					if (review_keys_list.length==0){
+            review_keys_list=review_keys;
+            break;
+          }
 				}
 			}
+      //this code sets the review embeddings for every shoe which has none to a zero vector, which is a garbage approach but so be it
+      //TODO make up something useful
 			for(const key of shoe_keys){
 				const review_keys=Object.keys(shoes_ret[key].review_embeddings);
 				if (review_keys.length<1){
-					for (const review_key in review_keys_list){
+					for (const review_key of review_keys_list){
 						shoes_ret[key].review_embeddings[review_key]=0.0;
 					}
 				}
 			}
-			console.log(Object.keys(shoes_ret).length);
+			console.log("#shoes with review embeddings",Object.keys(shoes_ret).length,"(though those without were given one)");
 
 	    for (const d_i in interaction_embeddings){
 	        const d=interaction_embeddings[d_i];
@@ -185,7 +221,7 @@ function init_shoes(){
 			for(const key of shoe_keys){
 				if (shoes_ret[key].interaction_embeddings.length<1) delete shoes_ret[key];
 			}
-			console.log(Object.keys(shoes_ret).length);
+			console.log("#shoes with interaction embeddings",Object.keys(shoes_ret).length);
 
 	        let keys=Object.keys(shoes_ret);
 	        for(let key of keys){
@@ -220,9 +256,11 @@ function init_shoes(){
 				}
 			}
 
-			console.log("longest sub name:",longest_name);
+			console.log("longest sub name of a shoe:",longest_name,"(necessary info for some interface scaling issues)");
 
+      console.log("saving generated data..");
       fs.writeFileSync("./shoes.json",JSON.stringify(shoes_ret), utf8);
+      console.log("saved");
     }
 
     return shoes_ret;
@@ -233,211 +271,260 @@ const shoe_ids:string[]=Object.keys(shoes);
 console.log("fit shoes found: ",shoe_ids.length);
 
 function get_user_recommendations(user){
+  let search_id=false;
+  let id=undefined;
+  for (const word of user.query.split(" ")){
+    if (word.slice(0,3)=="id:"){
+      search_id=true;
+      id=word.slice(3);
+    }
+  }
+
 	let shoe_keys=[];
-	for (const key of shoe_ids){
-		const shoe=shoes[key];
+  if(search_id){
+    let id_shoe=shoes[id];
+    if (!id_shoe) throw Error("id ("+id+") does not exist, but was explicitely searched for");
+    shoe_keys=shoe_ids.slice().filter(key=>{
+      const shoe=shoes[key];
+      let gender="";
+      switch(id_shoe.age){
+        case "I":
+        case "J":
+        case "K":{
+          switch (id_shoe.gender){
+            case "UNISEX":{
+              gender="Child";
+              break;
+            }
+            case "FEMALE":{
+              gender="Girl";
+              break;
+            }
+            case "MALE":{
+              gender="Boy";
+              break;
+            }
+          }
+          break;
+        }
+        case "A":{
+          switch (id_shoe.gender){
+            case "UNISEX":{
+              gender="Adult";
+              break;
+            }
+            case "FEMALE":{
+              gender="Woman";
+              break;
+            }
+            case "MALE":{
+              gender="Man";
+              break;
+            }
+          }
+          break;
+        }
+      }
+      return shoe_fits_gender(shoe,gender);
+    });
+  }else{
+  	for (const key of shoe_ids){
+  		const shoe=shoes[key];
 
-		switch (user.gender.name){
-			case "Woman":{
-				if((shoe.gender!="FEMALE" && shoe.gender!="UNISEX") || shoe.age!="A") continue;
-				break;
-			}
-			case "Man":{
-				if((shoe.gender!="MALE" && shoe.gender!="UNISEX") || shoe.age!="A") continue;
-				break;
-			}
-			case "Adult":{
-				if(shoe.age!="A") continue;
-				break;
-			}
-			case "Girl":{
-				if((shoe.gender!="FEMALE" && shoe.gender!="UNISEX") || (shoe.age!="J" && shoe.age!="I" && shoe.age!="K")) continue;
-				break;
-			}
-			case "Boy":{
-				if((shoe.gender!="MALE" && shoe.gender!="UNISEX") || (shoe.age!="J" && shoe.age!="I" && shoe.age!="K")) continue;
-				break;
-			}
-			case "Child":{
-				if(shoe.age!="J" && shoe.age!="I" && shoe.age!="K") continue;
-				break;
-			}
-			default: {
-				console.log("unknown gender?",user.gender.name);
-			}
-		}
+      if (!shoe_fits_gender(shoe,user.gender.name)){
+        continue;
+      }
 
-		let word_found=false;
-		let discard_shoe=false;
-		let ignore_category=false;
-		for(const word of user.query.split(" ")){
-			if(discard_shoe) break;
-			if(shoe.review_embeddings[word.toLowerCase()]) ignore_category=true;
-			switch(word.toLowerCase()){
-				case "green":{
-					if(shoe.color!="GRE") discard_shoe=true;
-					break;
-				}
-				case "red":{
-					if(shoe.color!="RED") discard_shoe=true;
-					break;
-				}
-				case "blue":{
-					if(shoe.color!="BLU") discard_shoe=true;
-					break;
-				}
-				case "white":{
-					if(shoe.color!="WHI") discard_shoe=true;
-					break;
-				}
-				case "gray":
-				case "grey":{
-					if(shoe.color!="GRY") discard_shoe=true;
-					break;
-				}
-				case "pink":{
-					if(shoe.color!="PIN") discard_shoe=true;
-					break;
-				}
-				case "metallic":{
-					if(shoe.color!="MET") discard_shoe=true;
-					break;
-				}
-				case "creme":{
-					if(shoe.color!="CRE") discard_shoe=true;
-					break;
-				}
-				case "purple":{
-					if(shoe.color!="PUR") discard_shoe=true;
-					break;
-				}
-				case "orange":{
-					if(shoe.color!="ORA") discard_shoe=true;
-					break;
-				}
-				case "black":{
-					if(shoe.color!="BLA") discard_shoe=true;
-					break;
-				}
-				case "brown":{
-					if(shoe.color!="BRW") discard_shoe=true;
-					break;
-				}
-				case "yellow":{
-					if(shoe.color!="YEL") discard_shoe=true;
-					break;
-				}
-			}
-		}
+  		let word_found=false;
+  		let discard_shoe=false;
+  		let ignore_category=false;
+  		for(const word of user.query.split(" ")){
+  			if(discard_shoe) break;
+  			if(shoe.review_embeddings[word.toLowerCase()]) ignore_category=true;
+  			switch(word.toLowerCase()){
+  				case "green":{
+  					if(shoe.color!="GRE") discard_shoe=true;
+  					break;
+  				}
+  				case "red":{
+  					if(shoe.color!="RED") discard_shoe=true;
+  					break;
+  				}
+  				case "blue":{
+  					if(shoe.color!="BLU") discard_shoe=true;
+  					break;
+  				}
+  				case "white":{
+  					if(shoe.color!="WHI") discard_shoe=true;
+  					break;
+  				}
+  				case "gray":
+  				case "grey":{
+  					if(shoe.color!="GRY") discard_shoe=true;
+  					break;
+  				}
+  				case "pink":{
+  					if(shoe.color!="PIN") discard_shoe=true;
+  					break;
+  				}
+  				case "metallic":{
+  					if(shoe.color!="MET") discard_shoe=true;
+  					break;
+  				}
+  				case "creme":{
+  					if(shoe.color!="CRE") discard_shoe=true;
+  					break;
+  				}
+  				case "purple":{
+  					if(shoe.color!="PUR") discard_shoe=true;
+  					break;
+  				}
+  				case "orange":{
+  					if(shoe.color!="ORA") discard_shoe=true;
+  					break;
+  				}
+  				case "black":{
+  					if(shoe.color!="BLA") discard_shoe=true;
+  					break;
+  				}
+  				case "brown":{
+  					if(shoe.color!="BRW") discard_shoe=true;
+  					break;
+  				}
+  				case "yellow":{
+  					if(shoe.color!="YEL") discard_shoe=true;
+  					break;
+  				}
+  			}
+  		}
 
-		for(const word of user.query.split(" ")){
-			if(discard_shoe) break;
-			switch(word.toLowerCase()){
-				case "running":{
-					if (shoe.category!="RUNNING" && !ignore_category) discard_shoe=true;
-					break;
-				}
-				case "sport":{
-					if (shoe.category!="SPORT" && !ignore_category) discard_shoe=true;
-					break;
-				}
-				case "weightlifting":{
-					if (shoe.category!="WEIGHTLIFTING" && !ignore_category) discard_shoe=true;
-					break;
-				}
-				case "originals":{
-					if (shoe.category!="ORIGINALS" && !ignore_category) discard_shoe=true;
-					break;
-				}
-				case "golf":{
-					if (shoe.category!="GOLF" && !ignore_category) discard_shoe=true;
-					break;
-				}
-				case "soccer":{
-					if (shoe.category!="FOOTBALL/SOCCER" && !ignore_category) discard_shoe=true;
-					break;
-				}
-				case "football":{
-					if (shoe.category!="AMERICAN FOOTBALL" && !ignore_category) discard_shoe=true;
-					break;
-				}
-				case "tennis":{
-					if (shoe.category!="TENNIS" && !ignore_category) discard_shoe=true;
-					break;
-				}
-				case "snowboarding":{
-					if (shoe.category!="SNOWBOARDING" && !ignore_category) discard_shoe=true;
-					break;
-				}
-				case "skateboarding":{
-					if (shoe.category!="SKATEBOARDING" && !ignore_category) discard_shoe=true;
-					break;
-				}
-				case "training":{
-					if (shoe.category!="TRAINING" && !ignore_category) discard_shoe=true;
-					break;
-				}
-				case "trail":{
-					if (shoe.category!="TRAIL RUNNING" && !ignore_category) discard_shoe=true;
-					break;
-				}
-				case "basketball":{
-					if (shoe.category!="BASKETBALL" && !ignore_category) discard_shoe=true;
-					break;
-				}
-				case "swim":{
-					if (shoe.category!="SWIM" && !ignore_category) discard_shoe=true;
-					break;
-				}
-				case "bike":{
-					if (shoe.category!="BIKE" && !ignore_category) discard_shoe=true;
-					break;
-				}
-				case "volleyball":{
-					if (shoe.category!="VOLLEYBALL" && !ignore_category) discard_shoe=true;
-					break;
-				}
-				case "hiking":{
-					if (shoe.category!="HIKING" && !ignore_category) discard_shoe=true;
-					break;
-				}
-				case "handball":{
-					if (shoe.category!="HANDBALL" && !ignore_category) discard_shoe=true;
-					break;
-				}
-				case "climb":{
-					if (shoe.category!="CLIMB" && !ignore_category) discard_shoe=true;
-					break;
-				}
-				case "boxing":{
-					if (shoe.category!="BOXING" && !ignore_category) discard_shoe=true;
-					break;
-				}
-				case "field":
-				case "track":{
-					if (shoe.category!="TRACK AND FIELD") discard_shoe=true;
-					break;
-				}
-			}
-		}
-		if(discard_shoe) continue;
+  		for(const word of user.query.split(" ")){
+  			if(discard_shoe) break;
+  			switch(word.toLowerCase()){
+  				case "running":{
+  					if (shoe.category!="RUNNING" && !ignore_category) discard_shoe=true;
+  					break;
+  				}
+  				case "sport":{
+  					if (shoe.category!="SPORT" && !ignore_category) discard_shoe=true;
+  					break;
+  				}
+  				case "weightlifting":{
+  					if (shoe.category!="WEIGHTLIFTING" && !ignore_category) discard_shoe=true;
+  					break;
+  				}
+  				case "originals":{
+  					if (shoe.category!="ORIGINALS" && !ignore_category) discard_shoe=true;
+  					break;
+  				}
+  				case "golf":{
+  					if (shoe.category!="GOLF" && !ignore_category) discard_shoe=true;
+  					break;
+  				}
+  				case "soccer":{
+  					if (shoe.category!="FOOTBALL/SOCCER" && !ignore_category) discard_shoe=true;
+  					break;
+  				}
+  				case "football":{
+  					if (shoe.category!="AMERICAN FOOTBALL" && !ignore_category) discard_shoe=true;
+  					break;
+  				}
+  				case "tennis":{
+  					if (shoe.category!="TENNIS" && !ignore_category) discard_shoe=true;
+  					break;
+  				}
+  				case "snowboarding":{
+  					if (shoe.category!="SNOWBOARDING" && !ignore_category) discard_shoe=true;
+  					break;
+  				}
+  				case "skateboarding":{
+  					if (shoe.category!="SKATEBOARDING" && !ignore_category) discard_shoe=true;
+  					break;
+  				}
+  				case "training":{
+  					if (shoe.category!="TRAINING" && !ignore_category) discard_shoe=true;
+  					break;
+  				}
+  				case "trail":{
+  					if (shoe.category!="TRAIL RUNNING" && !ignore_category) discard_shoe=true;
+  					break;
+  				}
+  				case "basketball":{
+  					if (shoe.category!="BASKETBALL" && !ignore_category) discard_shoe=true;
+  					break;
+  				}
+  				case "swim":{
+  					if (shoe.category!="SWIM" && !ignore_category) discard_shoe=true;
+  					break;
+  				}
+  				case "bike":{
+  					if (shoe.category!="BIKE" && !ignore_category) discard_shoe=true;
+  					break;
+  				}
+  				case "volleyball":{
+  					if (shoe.category!="VOLLEYBALL" && !ignore_category) discard_shoe=true;
+  					break;
+  				}
+  				case "hiking":{
+  					if (shoe.category!="HIKING" && !ignore_category) discard_shoe=true;
+  					break;
+  				}
+  				case "handball":{
+  					if (shoe.category!="HANDBALL" && !ignore_category) discard_shoe=true;
+  					break;
+  				}
+  				case "climb":{
+  					if (shoe.category!="CLIMB" && !ignore_category) discard_shoe=true;
+  					break;
+  				}
+  				case "boxing":{
+  					if (shoe.category!="BOXING" && !ignore_category) discard_shoe=true;
+  					break;
+  				}
+  				case "field":
+  				case "track":{
+  					if (shoe.category!="TRACK AND FIELD") discard_shoe=true;
+  					break;
+  				}
+  			}
+  		}
+  		if(discard_shoe) continue;
 
-		shoe_keys.push(key);
-	}
+  		shoe_keys.push(key);
+  	}
+  }
 
-	console.log("found this many shoes for a new user:",shoe_keys.length);
+	//console.log("found this many shoes for a new user:",shoe_keys.length);
 
-  var ret={image:[],review:[],interaction:[]};
+  var ret={image:[],review:[],interaction:[],randomized:{review:false,image:false,interaction:false}};
 
 	let review_ranked=rank_by_reviews(shoe_keys,user);
 
 	//if no review words are found, randomize search results a bit
-	if(review_ranked.ms==0.0){
+	if(review_ranked.ms==0.0 && !search_id){
 		const shuffled_shoes=shuffle_array(review_ranked.r.slice());
 
 		ret.review=shuffled_shoes;
 		ret.image=rank_by_images(shoe_keys,shoes[shuffled_shoes[Math.floor(Math.random()*6)]].image_embeddings);
 		ret.interaction=rank_by_interactions(shoe_keys,shoes[shuffled_shoes[Math.floor(Math.random()*6)]].interaction_embeddings);
+    ret.randomized.review=true;
+    ret.randomized.image=true;
+    ret.randomized.interaction=true;
+  }else if(search_id){
+		const best_shoe=shoes[id];
+    ret.review=rank_by_review_score(shoe_keys,best_shoe.review_embeddings);
+    //if first shoe is not the searched one, its review embeddings are all 0 (which is also the case for many others), so randomize results, but still put the specified one in the front
+    if(ret.review[0]!=id){
+      shuffle_array(ret.review);
+      let index=ret.review.findIndex(k=>k==id);
+      if(!index) throw "id not found that should definitely be there!";
+      let temp=ret.review[0];
+      ret.review[0]=ret.review[index];
+      ret.review[index]=temp;
+      ret.randomized.review=true;
+    }
+		ret.image=rank_by_images(shoe_keys,best_shoe.image_embeddings);
+		ret.interaction=rank_by_interactions(shoe_keys,best_shoe.interaction_embeddings);
 	}else{
 		ret.review=review_ranked.r;
 
@@ -475,8 +562,7 @@ function rank_by_reviews(keys,user){
 }
 function rank_by_images(keys,best_score){
 	let score=function(key){
-		const s=calc_distance(shoes[key].image_embeddings,best_score);
-		return s;
+		return cos_similarity(shoes[key].image_embeddings,best_score);
 	};
 	let scores={};
 	for (const key of keys){
@@ -487,8 +573,7 @@ function rank_by_images(keys,best_score){
 }
 function rank_by_interactions(keys,best_score){
 	let score=function(key){
-		const s=calc_distance(shoes[key].interaction_embeddings,best_score);
-		return s;
+		return cos_similarity(shoes[key].interaction_embeddings,best_score);
 	};
 	let scores={};
 	for (const key of keys){
@@ -499,39 +584,39 @@ function rank_by_interactions(keys,best_score){
 }
 function rank_by_review_score(keys,best_score){
 	let score=function(key){
-		const s=calc_distance(shoes[key].review_embeddings,best_score);
-		return s;
+		return cos_similarity(shoes[key].review_embeddings,best_score);
 	};
 	let scores={};
 	for (const key of keys){
 		scores[key]=score(key);
 	}
 	let ret=keys.slice().sort((s1,s2)=>scores[s2]-scores[s1]);
+
 	return ret;
 }
 
-function calc_distance(a,b){
+function cos_similarity(a,b){
 	let ret=0.0;
 	let a_length=0.0;
 	let b_length=0.0;
 
-	try{
-		for(const key of Object.keys(a)){
-			const a_value=parseFloat(a[key]);
-			const b_value=parseFloat(b[key]);
-			ret+=a_value*b_value;
-			a_length+=a_value*a_value;
-			b_length+=b_value*b_value;
-		}
-	}catch(e){
-		console.log("objects with differing fields compared",e);
-		return NaN;
+	for(const key of Object.keys(a)){
+		const a_value=parseFloat(a[key]);
+		const b_value=parseFloat(b[key]);
+		ret+=a_value*b_value;
+		a_length+=a_value*a_value;
+		b_length+=b_value*b_value;
 	}
 
 	a_length=Math.sqrt(a_length);
 	b_length=Math.sqrt(b_length);
+
 	ret/=a_length*b_length;
-	return Math.abs(ret);
+  if (isNaN(ret)){
+    ret=0.0;
+  }
+  ret=Math.abs(ret);
+	return ret;
 }
 
 let user_data={next_id:0};
@@ -553,7 +638,7 @@ responseMap['/senduser']=function(response:typeof http.ServerResponse,request:ty
 
 				user_data[id]=user;
 
-				let sorted_snippet={image:[],interaction:[],review:[]};
+				let sorted_snippet={image:[],interaction:[],review:[],randomized:user.sorted_preference.randomized};
 				sorted_snippet.image=user.sorted_preference.image.slice(0,6);
 				sorted_snippet.interaction=user.sorted_preference.interaction.slice(0,6);
 				sorted_snippet.review=user.sorted_preference.review.slice(0,6);
@@ -570,7 +655,8 @@ responseMap['/senduser']=function(response:typeof http.ServerResponse,request:ty
 				response.end(JSON.stringify(ret));
 
 			}catch(e){
-				console.log("invalid senduser input",e);
+				console.log("invalid senduser input: ",e.message);
+        response.end();
 			}
 		});
 	}
@@ -624,7 +710,12 @@ responseMap['/getshoes']=function(response:typeof http.ServerResponse,request:ty
 					if(!!s){
 						const shoe=shoes[s];
 						if(!!shoe){
-							ret.push({name:shoe.name,id:shoe.id,src:shoe.id+".png",bullets:shoe.bullets,price:shoe.price,price_text:shoe.price+" $"});
+              let word_keys=Object.keys(shoe.review_embeddings);
+              word_keys.sort((w1,w2)=>{
+                return shoe.review_embeddings[w2]-shoe.review_embeddings[w1];
+              });
+              const words=word_keys.slice(0,5);
+							ret.push({name:shoe.name,id:shoe.id,src:shoe.id+".png",bullets:shoe.bullets,price:shoe.price,price_text:shoe.price+" $",words});
 						}else{
 							throw "invalid shoe id";
 						}
@@ -637,7 +728,8 @@ responseMap['/getshoes']=function(response:typeof http.ServerResponse,request:ty
 			}catch(e){
 				response.writeHead(404,htmlContent);
 				response.end("<!doctype html><html><body>invalid input</body></html>");
-				console.log("invalid getshoes input",e);
+				console.log("invalid getshoes input: ",e.message);
+        throw e;
 			}
 		});
 	}
@@ -676,7 +768,7 @@ responseMap['/improve']=function(response:typeof http.ServerResponse,request:typ
 						//calc median vector of embeddings of wishlisted shoes as best shoe embeddings
 						for(const key of wishlisted){
 							const shoe=shoes[key];
-							if(!shoe) throw "invalid shoe id ".concat(key);
+							if(!shoe) throw "image, invalid shoe id "+key;
 
 							if(typeof best_shoe=="undefined"){
 								best_shoe=shoe.image_embeddings;
@@ -698,7 +790,7 @@ responseMap['/improve']=function(response:typeof http.ServerResponse,request:typ
 						let c=0;
 						for(const key of wishlisted){
 							const shoe=shoes[key];
-							if(!shoe) throw "invalid shoe id ".concat(key);
+							if(!shoe) throw "review, invalid shoe id "+key;
 
 							if(typeof best_shoe=="undefined"){
 								best_shoe=shoe.review_embeddings;
@@ -720,7 +812,7 @@ responseMap['/improve']=function(response:typeof http.ServerResponse,request:typ
 						let c=0;
 						for(const key of wishlisted){
 							const shoe=shoes[key];
-							if(!shoe) throw "invalid shoe id ".concat(key);
+							if(!shoe) throw "interaction, invalid shoe id "+key;
 
 							if(typeof best_shoe=="undefined"){
 								best_shoe=shoe.interaction_embeddings;
@@ -745,7 +837,8 @@ responseMap['/improve']=function(response:typeof http.ServerResponse,request:typ
 				response.writeHead(200,jsonContent);
 				response.end(JSON.stringify({improved:true}));
 			}catch(e){
-				console.log("queue improvement failed because:",e);
+				console.log("queue improvement failed because:",e.message);
+        response.end();
 			}
 		});
 	}
@@ -774,11 +867,11 @@ const server:typeof http.Server = http.createServer(function(request:typeof http
 					response.writeHead(200,pngContent);
 					response.end(image_file,binary);
 				}catch(e){
-					console.log("no image for shoe in list found. this should not happen! remove 'shoes.json' and restart server.",pathname,e);
+					console.log("no image for shoe in list found. this should not happen! remove 'shoes.json' and restart server. (image path:",pathname," and error message:",e.message,")");
 				}
 			}
 		}else{
-			console.log("warning:",userurl.pathname,"not found");
+      console.log("warning:",userurl.pathname+" not found");
 			response.end();
 		}
 	}
