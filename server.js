@@ -242,6 +242,7 @@ function init_shoes() {
                 }
             }
         }
+        console.log("#shoes with image", Object.keys(shoes_ret).length);
         var longest_name = "";
         for (var _t = 0, _u = Object.keys(shoes_ret); _t < _u.length; _t++) {
             var key = _u[_t];

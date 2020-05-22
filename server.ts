@@ -244,6 +244,8 @@ function init_shoes(){
 	            }
 	        }
 
+			console.log("#shoes with image",Object.keys(shoes_ret).length);
+
 			let longest_name="";
 			for(const key of Object.keys(shoes_ret)){
 				let shoe=shoes_ret[key];
