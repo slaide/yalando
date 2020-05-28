@@ -21,7 +21,6 @@ const cssContent={"Content-Type":"text/css"};
 const pngContent={"Content-Type":"image/png"};
 const jpgContent={"Content-Type":"image/jpg"};
 const jsContent={"Content-Type":"application/javascript"};
-//const tsContent={"Content-Type":"application/javascript"};
 const jsonContent={"Content-Type":"application/json"};
 
 const page:string=fs.readFileSync("start.html",utf8);
@@ -33,18 +32,8 @@ responseMap["/adidas-logo.jpg"]=function(response:typeof http.ServerResponse,req
 };
 responseMap["/script.js"]=function(response:typeof http.ServerResponse,request:typeof http.ClientRequest){
 	response.writeHead(200,jsContent);
-	//let scriptFileTS=fs.readFileSync("script.ts",utf8);
-	//let scriptFileJS=tss(scriptFileTS);
 	let scriptFile=fs.readFileSync("script.js",utf8);
 	response.end(scriptFile,utf8);
-};
-responseMap["/typescript.compile.min.js"]=function(response:typeof http.ServerResponse,request:typeof http.ClientRequest){
-	response.writeHead(200,jsContent);
-	response.end(fs.readFileSync("typescript.compile.min.js"),utf8);
-};
-responseMap["/typescript.min.js"]=function(response:typeof http.ServerResponse,request:typeof http.ClientRequest){
-	response.writeHead(200,jsContent);
-	response.end(fs.readFileSync("typescript.min.js"),utf8);
 };
 responseMap["/generic_styles.css"]=function(response:typeof http.ServerResponse,request:typeof http.ClientRequest){
 	response.writeHead(200,cssContent);
@@ -69,10 +58,6 @@ responseMap["/neutral.png"]=function(response:typeof http.ServerResponse,request
 responseMap["/female.png"]=function(response:typeof http.ServerResponse,request:typeof http.ClientRequest){
 	response.writeHead(200,pngContent);
 	response.end(fs.readFileSync("female.png"),binary);
-};
-responseMap["/shoe.jpg"]=function(response:typeof http.ServerResponse,request:typeof http.ClientRequest){
-	response.writeHead(200,jpgContent);
-	response.end(fs.readFileSync("shoe.jpg"),binary);
 };
 
 function shoe_fits_gender(shoe,gender){
@@ -212,14 +197,15 @@ function init_shoes(){
 	        if(shoe){
 	            for(const key of Object.keys(d)){
 	                if(key==="article" || key.length===0) continue;
-	                shoe.interaction_embeddings.push(d[key]);
+	                shoes_ret[d.article].interaction_embeddings.push(d[key]);
 	            }
 	        }
 	    }
 
-			shoe_keys=Object.keys(shoes_ret);
-			for(const key of shoe_keys){
-				if (shoes_ret[key].interaction_embeddings.length<1) delete shoes_ret[key];
+      shoe_keys=Object.keys(shoes_ret);
+			for(const shoe_key of shoe_keys){
+        let shoe=shoes_ret[shoe_key];
+				if (shoe.interaction_embeddings.length<1) delete shoes_ret[shoe_key];
 			}
 			console.log("#shoes with interaction embeddings",Object.keys(shoes_ret).length);
 
@@ -560,37 +546,29 @@ function rank_by_reviews(keys,user){
 		if(s>max_score) max_score=s;
 	}
 	let ret=keys.slice().sort((s1,s2)=>scores[s2]-scores[s1]);
+
 	return {r:ret,ms:max_score};
 }
 function rank_by_images(keys,best_score){
-	let score=function(key){
-		return cos_similarity(shoes[key].image_embeddings,best_score);
-	};
 	let scores={};
 	for (const key of keys){
-		scores[key]=score(key);
+		scores[key]=cos_similarity(shoes[key].image_embeddings,best_score);
 	}
 	let ret=keys.slice().sort((s1,s2)=>scores[s2]-scores[s1]);
 	return ret;
 }
 function rank_by_interactions(keys,best_score){
-	let score=function(key){
-		return cos_similarity(shoes[key].interaction_embeddings,best_score);
-	};
 	let scores={};
 	for (const key of keys){
-		scores[key]=score(key);
+		scores[key]=cos_similarity(shoes[key].interaction_embeddings,best_score);
 	}
 	let ret=keys.slice().sort((s1,s2)=>scores[s2]-scores[s1]);
 	return ret;
 }
 function rank_by_review_score(keys,best_score){
-	let score=function(key){
-		return cos_similarity(shoes[key].review_embeddings,best_score);
-	};
 	let scores={};
 	for (const key of keys){
-		scores[key]=score(key);
+		scores[key]=cos_similarity(shoes[key].review_embeddings,best_score);
 	}
 	let ret=keys.slice().sort((s1,s2)=>scores[s2]-scores[s1]);
 

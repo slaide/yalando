@@ -19,7 +19,6 @@ var cssContent = { "Content-Type": "text/css" };
 var pngContent = { "Content-Type": "image/png" };
 var jpgContent = { "Content-Type": "image/jpg" };
 var jsContent = { "Content-Type": "application/javascript" };
-//const tsContent={"Content-Type":"application/javascript"};
 var jsonContent = { "Content-Type": "application/json" };
 var page = fs.readFileSync("start.html", utf8);
 var responseMap = {};
@@ -29,18 +28,8 @@ responseMap["/adidas-logo.jpg"] = function (response, request) {
 };
 responseMap["/script.js"] = function (response, request) {
     response.writeHead(200, jsContent);
-    //let scriptFileTS=fs.readFileSync("script.ts",utf8);
-    //let scriptFileJS=tss(scriptFileTS);
     var scriptFile = fs.readFileSync("script.js", utf8);
     response.end(scriptFile, utf8);
-};
-responseMap["/typescript.compile.min.js"] = function (response, request) {
-    response.writeHead(200, jsContent);
-    response.end(fs.readFileSync("typescript.compile.min.js"), utf8);
-};
-responseMap["/typescript.min.js"] = function (response, request) {
-    response.writeHead(200, jsContent);
-    response.end(fs.readFileSync("typescript.min.js"), utf8);
 };
 responseMap["/generic_styles.css"] = function (response, request) {
     response.writeHead(200, cssContent);
@@ -65,10 +54,6 @@ responseMap["/neutral.png"] = function (response, request) {
 responseMap["/female.png"] = function (response, request) {
     response.writeHead(200, pngContent);
     response.end(fs.readFileSync("female.png"), binary);
-};
-responseMap["/shoe.jpg"] = function (response, request) {
-    response.writeHead(200, jpgContent);
-    response.end(fs.readFileSync("shoe.jpg"), binary);
 };
 function shoe_fits_gender(shoe, gender) {
     switch (gender) {
@@ -210,15 +195,16 @@ function init_shoes() {
                     var key = _o[_m];
                     if (key === "article" || key.length === 0)
                         continue;
-                    shoe.interaction_embeddings.push(d[key]);
+                    shoes_ret[d.article].interaction_embeddings.push(d[key]);
                 }
             }
         }
         shoe_keys = Object.keys(shoes_ret);
         for (var _p = 0, shoe_keys_4 = shoe_keys; _p < shoe_keys_4.length; _p++) {
-            var key = shoe_keys_4[_p];
-            if (shoes_ret[key].interaction_embeddings.length < 1)
-                delete shoes_ret[key];
+            var shoe_key = shoe_keys_4[_p];
+            var shoe = shoes_ret[shoe_key];
+            if (shoe.interaction_embeddings.length < 1)
+                delete shoes_ret[shoe_key];
         }
         console.log("#shoes with interaction embeddings", Object.keys(shoes_ret).length);
         var keys = Object.keys(shoes_ret);
@@ -593,37 +579,28 @@ function rank_by_reviews(keys, user) {
     return { r: ret, ms: max_score };
 }
 function rank_by_images(keys, best_score) {
-    var score = function (key) {
-        return cos_similarity(shoes[key].image_embeddings, best_score);
-    };
     var scores = {};
     for (var _i = 0, keys_3 = keys; _i < keys_3.length; _i++) {
         var key = keys_3[_i];
-        scores[key] = score(key);
+        scores[key] = cos_similarity(shoes[key].image_embeddings, best_score);
     }
     var ret = keys.slice().sort(function (s1, s2) { return scores[s2] - scores[s1]; });
     return ret;
 }
 function rank_by_interactions(keys, best_score) {
-    var score = function (key) {
-        return cos_similarity(shoes[key].interaction_embeddings, best_score);
-    };
     var scores = {};
     for (var _i = 0, keys_4 = keys; _i < keys_4.length; _i++) {
         var key = keys_4[_i];
-        scores[key] = score(key);
+        scores[key] = cos_similarity(shoes[key].interaction_embeddings, best_score);
     }
     var ret = keys.slice().sort(function (s1, s2) { return scores[s2] - scores[s1]; });
     return ret;
 }
 function rank_by_review_score(keys, best_score) {
-    var score = function (key) {
-        return cos_similarity(shoes[key].review_embeddings, best_score);
-    };
     var scores = {};
     for (var _i = 0, keys_5 = keys; _i < keys_5.length; _i++) {
         var key = keys_5[_i];
-        scores[key] = score(key);
+        scores[key] = cos_similarity(shoes[key].review_embeddings, best_score);
     }
     var ret = keys.slice().sort(function (s1, s2) { return scores[s2] - scores[s1]; });
     return ret;
