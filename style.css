@@ -52,7 +52,6 @@
 }
 #crop2_2{
 	background-color: white;
-	padding-right: calc(var(--document-width)/100*2.2);
 }
 
 #card3{
@@ -61,22 +60,35 @@
 #crop3_1{
 	background-color: black;
 	color: white;
+	padding-left: calc(var(--document-width)/100*1);
+	padding-right: calc(var(--document-width)/100*1);
 }
-#crop3_1_1{
-	font-size: calc(var(--document-width)/100*6);
-	padding-bottom: calc(var(--document-width)/100*3);
+#crop3_1_1_1{
+  padding-top: calc(var(--document-height)/100*2.0);
+	font-size: calc(var(--document-width)/100*2.6);
 }
-#crop3_1_2{
+.crop3_1_1_2{
+  color: grey;
+  --deco:none;
+}
+.crop3_1_1_2.foreground{
+  color: white;
+  --deco:underline;
+}
+.crop3_1_1_2_1{
+	font-size: calc(var(--document-width)/100*3);
+  text-decoration: var(--deco);
+}
+.crop3_1_1_2_2{
 	font-size: calc(var(--document-width)/100*2.2);
 	padding-left: calc(var(--document-width)/100*1);
 	padding-right: calc(var(--document-width)/100*1);
 }
 #crop3_2{
 	background-color: white;
-	padding-right: calc(var(--document-width)/100*2.2);
 }
-#crop3_2_1{
-	font-size: calc(var(--document-width)/100*2.8);
+#crop_3_2_1{
+	font-size: calc(var(--document-height)/100*5);
 }
 
 #card4{
@@ -193,6 +205,7 @@
 .standalone-search-button{
   float:right;
 	font-size: calc(var(--document-width)/100*2.8);
+  padding-right: calc(var(--document-width)/100*3);
 }
 
 .blockContainer{

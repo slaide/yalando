@@ -51,32 +51,34 @@
 
 			<div id="card3" class="document-height document-width absolute" v-bind:class="card3classes">
 				<div id="crop3_1" class="flex-4">
-					<div class="centered relative">
-						<div id="crop3_1_1">{{current_preference.name}}</div>
-						<div id="crop3_1_2">
-							<span v-if="current_preference.randomized">Due to insufficient data, these results are randomized, for your current search.</span>
-							<span v-else>{{current_preference.description}}</span>
+					<div class="relative">
+						<div id="crop3_1_1_1" class="document-height-2">
+							<div class="relative text-center">
+								Sort Shoes based on:
+							</div>
+						</div>
+						<div class="crop3_1_1_2 pointer document-height-3" v-bind:class="{foreground:preference.focused}" v-for="preference in preferences" v-on:mouseenter="peekPreference(preference)" v-on:click="setPreference(preference)">
+							<div class="crop3_1_1_2_1">{{preference.name}}</div>
+							<div class="crop3_1_1_2_2">
+								<span v-if="preference.randomized">Due to insufficient data, these results are randomized, for your current search.</span>
+								<span v-else>{{preference.description}}</span>
+							</div>
 						</div>
 					</div>
 				</div>
 				<div id="crop3_2" class="flex-8">
-					<div id="crop3_2_1" class="document-height-2">
-						<div class="relative centered text-center">
-							Sort Shoes based on:
-						</div>
+					<div id="crop_3_2_1" class="document-height-2 document-width-7 relative horizontal-center">
+						<div class="relative centered text-center">Preview</div>
 					</div>
-					<div class="blockContainer document-height-8 document-width-6 relative horizontal-center">
-						<div class="block text-center flex-end" v-for="preference in preferences" v-on:mouseenter="peekPreference(preference)" v-on:mouseleave="unpeekPreference(preference)" v-on:click="setPreference(preference)" v-bind:class="{pointer:preference.real}">
-							<div v-if="preference.show_shoe" class="relative shoeImageContainer">
-								<img class="shoeImage" v-bind:src="preference.current_preview.src">
-							</div>
-							<div v-else style="transition:all 0s; width:100%;height:100%">
-								<div class="relative centered">{{preference.name}}</div>
+					<div class="blockContainer document-height-8 document-width-7 relative horizontal-center">
+						<div class="block text-center flex-end" v-for="preview in current_preference.shoe_previews">
+							<div class="relative shoeImageContainer">
+								<img class="shoeImage" v-bind:src="preview.src">
 							</div>
 						</div>
 					</div>
-					<div class="document-height-2">
-						<div style="height:100%;" class="relative standalone-search-button ">
+					<div class="document-height-2 new-search-button">
+						<div style="height:100%;" class="relative standalone-search-button">
 							<div class="relative pointer small_text vertical-center" v-on:click="newSearch">New Search</div>
 						</div>
 					</div>
@@ -112,7 +114,7 @@
 							Recommendations
 						</div>
 					</div>
-					<div class="blockContainer document-height-8 document-width-6 relative horizontal-center">
+					<div class="blockContainer document-height-8 document-width-7 relative horizontal-center">
 						<div class="block text-center flex-end" v-bind:key="shoe.id" v-bind:class="{hover:shoe.hover,pointer:shoe.real}" v-for="shoe in user.queue" v-on:mouseleave="function(ev){unpeekShoe(shoe,ev);}" v-on:mousemove="function(ev){peekShoe(shoe,ev);}" v-on:click="function(ev){handleClick(shoe,ev);}">
 							<div class="relative shoeImageContainer">
 								<img class="shoeImage" v-bind:src="shoe.src">

@@ -20,12 +20,17 @@ const htmlContent={"Content-Type":"text/html"};
 const cssContent={"Content-Type":"text/css"};
 const pngContent={"Content-Type":"image/png"};
 const jpgContent={"Content-Type":"image/jpg"};
+const icoContent={"Content-Type":"image/x-icon"};
 const jsContent={"Content-Type":"application/javascript"};
 const jsonContent={"Content-Type":"application/json"};
 
 const page:string=fs.readFileSync("start.html",utf8);
 
 const responseMap={};
+responseMap["/favicon.ico"]=function(response:typeof http.ServerResponse,request:typeof http.ClientRequest){
+	response.writeHead(200,icoContent);
+	response.end(fs.readFileSync("favicon.ico"),binary);
+};
 responseMap["/adidas-logo.jpg"]=function(response:typeof http.ServerResponse,request:typeof http.ClientRequest){
 	response.writeHead(200,jpgContent);
 	response.end(fs.readFileSync("adidas-logo.jpg"),binary);
@@ -555,6 +560,7 @@ function rank_by_images(keys,best_score){
 		scores[key]=cos_similarity(shoes[key].image_embeddings,best_score);
 	}
 	let ret=keys.slice().sort((s1,s2)=>scores[s2]-scores[s1]);
+
 	return ret;
 }
 function rank_by_interactions(keys,best_score){
@@ -563,6 +569,7 @@ function rank_by_interactions(keys,best_score){
 		scores[key]=cos_similarity(shoes[key].interaction_embeddings,best_score);
 	}
 	let ret=keys.slice().sort((s1,s2)=>scores[s2]-scores[s1]);
+
 	return ret;
 }
 function rank_by_review_score(keys,best_score){

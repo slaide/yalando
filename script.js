@@ -29,12 +29,9 @@ var app=new Vue({
 			queue:[],
 		},
 		preferences:[
-			{name:"Review",description:"These shoes are described similarly by other users.",shoe_previews:[],show_shoe:false,current_preview:{},real:true,randomized:false},
-			{name:"Interaction",description:"These shoes are often on the same wishlist.",shoe_previews:[],show_shoe:false,current_preview:{},real:true,randomized:false},
-			{name:"Image",description:"These shoes look similar.",shoe_previews:[],show_shoe:false,current_preview:{},real:true,randomized:false},
-			{name:"",description:"",shoe_previews:{},show_shoe:false,current_preview:{},real:false,randomized:false},
-			{name:"",description:"",shoe_previews:{},show_shoe:false,current_preview:{},real:false,randomized:false},
-			{name:"",description:"",shoe_previews:{},show_shoe:false,current_preview:{},real:false,randomized:false},
+			{name:"Review",description:"These shoes are described similarly by other users.",shoe_previews:[],randomized:false},
+			{name:"Interaction",description:"These shoes are often on the same wishlist.",shoe_previews:[],randomized:false},
+			{name:"Image",description:"These shoes look similar.",shoe_previews:[],randomized:false},
 		],
 		current_preference:{},
 		current_shoe:{},
@@ -199,20 +196,12 @@ var app=new Vue({
 			this.setState('preference');
 		},
 		peekPreference:function(preference){
-			if(preference.name=="") return;
-			this.current_preference=preference;
-
 			for (i in this.preferences){
-				this.preferences[i].current_preview=preference.shoe_previews[i];
-				this.preferences[i].show_shoe=true;
+        this.preferences[i].focused=false;
 			}
-		},
-		unpeekPreference:function(preference){
-			if(preference.name=="") return;
 
-			for (pref of this.preferences){
-				pref.show_shoe=false;
-			}
+			this.current_preference=preference;
+      preference.focused=true;
 		},
 		setPreference:function(preference){
 			if(preference.name=="") return;

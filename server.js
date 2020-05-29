@@ -18,10 +18,15 @@ var htmlContent = { "Content-Type": "text/html" };
 var cssContent = { "Content-Type": "text/css" };
 var pngContent = { "Content-Type": "image/png" };
 var jpgContent = { "Content-Type": "image/jpg" };
+var icoContent = { "Content-Type": "image/x-icon" };
 var jsContent = { "Content-Type": "application/javascript" };
 var jsonContent = { "Content-Type": "application/json" };
 var page = fs.readFileSync("start.html", utf8);
 var responseMap = {};
+responseMap["/favicon.ico"] = function (response, request) {
+    response.writeHead(200, icoContent);
+    response.end(fs.readFileSync("favicon.ico"), binary);
+};
 responseMap["/adidas-logo.jpg"] = function (response, request) {
     response.writeHead(200, jpgContent);
     response.end(fs.readFileSync("adidas-logo.jpg"), binary);
