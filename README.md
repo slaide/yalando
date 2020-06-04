@@ -8,3 +8,7 @@ this readme mostly tracks the stuff that still needs to be done/pushed:
 - show placeholder text in wishlist in preview panel if no shoe is in wishlist
 - also show placeholder text in recommendation view in preview panel if queue is empty
 - maybe animate more things
+- separate football shoes from all others. if football is not searched explictely, hide football shoes
+- show only best shoe as preview on embedding selection screen (no preselected preview)
+- dislike right, like left
+- add third example, for a search targeting a specific id
