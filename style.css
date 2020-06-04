@@ -70,14 +70,15 @@
 .crop3_1_1_2{
   color: grey;
   --deco:none;
+  padding-bottom: calc(var(--document-width)/100*2);
 }
 .crop3_1_1_2.foreground{
   color: white;
-  --deco:underline;
+  --deco:bold;
 }
 .crop3_1_1_2_1{
 	font-size: calc(var(--document-width)/100*3);
-  text-decoration: var(--deco);
+  font-weight: var(--deco);
 }
 .crop3_1_1_2_2{
 	font-size: calc(var(--document-width)/100*2.2);
