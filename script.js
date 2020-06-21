@@ -43,6 +43,9 @@ var app=new Vue({
         setSearchField:function(text){
             document.getElementById("search-field").value=text;
         },
+        getSearchField:function(text){
+            return document.getElementById("search-field").value;
+        },
         resize:function(){
             document.body.style="--document-height:"+document.documentElement.clientHeight+"px;--document-width:"+document.documentElement.clientWidth+"px;";
         },
@@ -51,6 +54,7 @@ var app=new Vue({
 				if(!this.stateEnums[state]) throw 'invalid state enum';
 
                 this.state=this.stateEnums[state];
+
 				if(this.state==this.stateEnums.person){
 					for(const word of this.user.query.split(" ")){
 						switch(word.toLowerCase()){
@@ -446,6 +450,7 @@ var app=new Vue({
       if (maybe_id){
         this.setSearchField("id:"+maybe_id);
         localStorage.clear();
+        this.setQuery();
       }
     },
 		newSearch:function(){
