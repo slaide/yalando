@@ -19,7 +19,7 @@
 						<input id="search-field" contenteditable="true" v-bind:placeholder="searchPlaceholder"></input>
 						<div id="search-submit" class="text-center pointer" v-on:click="setQuery()">{{searchButtonText}}</div>
 						<div id="search-prefix">e.g.</div>
-						<div v-for="example in searchExample" class="search-example" class="pointer" v-on:click="setSearchField(example)">{{example}}</div>
+						<div v-for="example in searchExample" class="search-example pointer" v-on:click="setSearchField(example)">{{example}}</div>
 					</div>
 				</div>
 			</div>
@@ -134,12 +134,16 @@
 					</div>
 					<div id="crop4_2_3" class="document-height-2">
 						<div class="relative centered text-center small_text">
-							<div v-if="!recommend" style="width:100%;display:flex;" class="flex-space-content">
-								<span style="color:white;">New Search</span>
-								<span v-bind:class="buyButtonClasses" v-on:click="buyShoes" >Buy Shoes ({{wishlistLength}})</span>
-								<span class="pointer" v-on:click="newSearch">New Search</span>
+							<div id="c4_2_3_1_1" v-if="recommend" class="document-width-7 horizontal-center relative">
+								<div></div>
+								<div v-bind:class="improveButtonClasses" v-on:click="improveSearch">Improve Search Results</div>
+								<div></div>
 							</div>
-							<div v-if="recommend" v-bind:class="improveButtonClasses" v-on:click="improveSearch">Improve Search Results</div>
+							<div id="c4_2_3_1_2" v-else class="document-width-7 horizontal-center relative">
+								<div v-on:click="if(wishlistLength==1){proposeIdSearch(user.wishlist_show[0].id);}" v-bind:class="{pointer:(wishlistLength==1),black:(wishlistLength==1),grey:(wishlistLength!=1)}">Search Similar</div>
+								<div v-bind:class="buyButtonClasses" v-on:click="buyShoes" >Buy Shoes ({{wishlistLength}})</div>
+								<div class="pointer" v-on:click="newSearch">New Search</div>
+							</div>
 						</div>
 					</div>
 				</div>

@@ -144,6 +144,11 @@
 #crop4_2_1,#crop4_2_3{
 	font-size: calc(var(--document-width)/100*2.8);
 }
+#c4_2_3_1_1,#c4_2_3_1_2{
+  display:flex;
+  align-items: center;
+  justify-content: space-between;
+}
 
 #adidas-name{
     color: white;
