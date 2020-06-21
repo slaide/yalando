@@ -172,22 +172,19 @@
     background-color: black;
 	border-bottom: 0.1em solid black;
 }
-#search-example-1,#search-example-2{
+.search-example{
     grid-column-start: 2;
     grid-column-end: 6;
 }
-#search-prefix,#search-example-1,#search-example-2{
+#search-prefix,.search-example{
     color: black;
     background-color: white;
 }
 #search-prefix{
     text-align: right;
 }
-#search-prefix,#search-example-1,#search-example-2,#search-submit,#search-field{
+#search-prefix,.search-example,#search-submit,#search-field{
     padding: 0.2em;
-}
-#search-example-2{
-    padding-top: 0;
 }
 #personContainer{
     overflow: show;

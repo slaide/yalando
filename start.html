@@ -19,8 +19,7 @@
 						<input id="search-field" contenteditable="true" v-bind:placeholder="searchPlaceholder"></input>
 						<div id="search-submit" class="text-center pointer" v-on:click="setQuery()">{{searchButtonText}}</div>
 						<div id="search-prefix">e.g.</div>
-						<div id="search-example-1" class="pointer" v-on:click="setSearchField(searchExample[0])">{{searchExample[0]}}</div>
-						<div id="search-example-2" class="pointer" v-on:click="setSearchField(searchExample[1])">{{searchExample[1]}}</div>
+						<div v-for="example in searchExample" class="search-example" class="pointer" v-on:click="setSearchField(example)">{{example}}</div>
 					</div>
 				</div>
 			</div>
