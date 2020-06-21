@@ -30,16 +30,16 @@ var app=new Vue({
       queue:[],
     },
     preferences:[
-      {title:"Custom Opinion",name:"Review",description:"Products that are described similarly in product reviews.",shoe_previews:[],randomized:false},
+      {title:"Customer Opinion",name:"Review",description:"Products that are described similarly in product reviews.",shoe_previews:[],randomized:false},
       {title:"Customer Preference",name:"Interaction",description:"Product that have similar attributes and composition.",shoe_previews:[],randomized:false},
       {title:"Customer Perception",name:"Image",description:"Products that are similar from a visual perspective.",shoe_previews:[],randomized:false},
     ],
     current_preference:{},
     current_shoe:{},
     recommend:true,
-    wishlist_empty:{id:"",name:"The Wishlist is currently empty",price:"",price_text:"",text:"Like a shoe in the preview panel to add it to the Wishlist for further inspection."},
-    preview_empty:{id:"",name:"No more recommendations",price:"",price_text:"",text:"Sadly, we do not have more recommendations for you. You can either view and interact with your wishlist, or start a new search from the wishlist panel."},
-    unselected_shoe:{id:"",name:"Select a shoe for a preview",price:"",price_text:"",text:"Move your mouse on a shoe to view it in detail."},
+    wishlist_empty:{id:"",name:"The Wishlist is currently empty",price:"",price_text:"",text:"Like a recommended shoe to add it to the Wishlist."},
+    recommendations_empty:{id:"",name:"No more recommendations",price:"",price_text:"",text:"Sadly, we do not have more recommendations for you. You can either view and interact with your wishlist, or start a new search from the wishlist panel."},
+    unselected_shoe:{id:"",name:"Select a shoe to see it in detail",price:"",price_text:"",text:"Move your mouse on a shoe to view it in detail."},
     blank_shoe:{id:"",name:"",price:"",price_text:"",bullets:[],words:[],src:"",click_text:{},real:false},
   },
   methods:{
@@ -226,10 +226,12 @@ var app=new Vue({
       this.current_shoe=shoe;
       this.setShoeText(shoe,ev);
     },
-    unpeekShoe:function(shoe,ev){
-      if(!shoe || shoe.name.length==0)return;
-      this.current_shoe=shoe;
-      shoe.click_text={};
+    unpeekShoe:function(oldshoe,ev,newshoe){
+      if(!newshoe || newshoe.name.length==0 || !oldshoe){
+        return;
+      }
+      this.current_shoe=newshoe;
+      oldshoe.click_text={};
     },
     setShoeText:function(shoe,ev){
       if(!shoe || shoe.name.length==0){
@@ -294,6 +296,7 @@ var app=new Vue({
       this.user.wishlist.push(shoe);
       if(this.user.queue==this.user.recommendations){
         this.loadNewShoes(1);
+        this.unpeekShoe(shoe,{},this.user.recommendations.length!=0?this.unselected_shoe:this.recommendations_empty);
       }else{
         const shoe=this.user.wishlist.shift();
         if(!shoe){
@@ -307,8 +310,8 @@ var app=new Vue({
             this.user.queue.push(this.blank_shoe);
           }
         }
+        this.unpeekShoe(shoe,{},this.wishlistLength!=0?this.unselected_shoe:this.wishlist_empty);
       }
-      this.unpeekShoe(shoe,{});
     },
     dislikeShoe:function(shoe){
       if(!shoe || shoe.name.length==0){
@@ -326,6 +329,7 @@ var app=new Vue({
       }
       if(this.user.queue==this.user.recommendations){
         this.loadNewShoes(1);
+        this.unpeekShoe(shoe,{},this.user.recommendations.length!=0?this.unselected_shoe:this.recommendations_empty);
       }else{
         const shoe=this.user.wishlist.shift();
         if(!shoe){
@@ -339,8 +343,8 @@ var app=new Vue({
             this.user.queue.push(this.blank_shoe);
           }
         }
+        this.unpeekShoe(shoe,{},this.wishlistLength!=0?this.unselected_shoe:this.wishlist_empty);
       }
-      this.unpeekShoe(shoe,{});
     },
     loadNewShoes:function(count){
       var sender=new XMLHttpRequest();

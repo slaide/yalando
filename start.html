@@ -118,7 +118,7 @@
 						<div class="block text-center flex-end" v-bind:key="shoe.id" v-bind:class="{hover:shoe.hover,pointer:shoe.real}" v-for="shoe in user.queue" v-on:mouseleave="function(ev){unpeekShoe(shoe,ev);}" v-on:mousemove="function(ev){peekShoe(shoe,ev);}" v-on:click="function(ev){handleClick(shoe,ev);}">
 							<div class="relative shoeImageContainer">
 								<img class="shoeImage" v-bind:src="shoe.src">
-								<div>
+								<div v-if="current_shoe==shoe">
 									<div v-if="shoe.click_text.l">
 										<span class="big_text">{{shoe.click_text.left}}</span>
 										<span>  {{shoe.click_text.text}}  </span>
