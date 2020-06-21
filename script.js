@@ -118,16 +118,19 @@ var app=new Vue({
                 app.preferences[1].randomized=new_shoes.randomized.interaction;
                 app.preferences[2].randomized=new_shoes.randomized.image;
 
-                //app.peekPreference(app.preferences[0]);
+                if(app.preferences[0].shoe_previews[0].id==app.preferences[1].shoe_previews[0].id && app.preferences[1].shoe_previews[0].id==app.preferences[2].shoe_previews[0].id){
+                  app.current_preference={shoe_previews:app.preferences[0].shoe_previews.slice(0,1)};
+                }
+
               }catch(e){
                 console.log(e.message);
                 let r=window.confirm("Invalid data from server received (either due to invalid input, or an internal error). Do you want to restart the search?");
                 if(r){
-                window.location.reload();
+                  window.location.reload();
+                }
               }
             }
           }
-        }
         };
 
         sender.send(JSON.stringify(this.user));
@@ -572,6 +575,6 @@ var app=new Vue({
   },
   },
   beforeMount(){
-  this.peekGender(this.genders[0]);
+    this.peekGender(this.genders[0]);
   },
 });

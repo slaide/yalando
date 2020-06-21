@@ -4,4 +4,3 @@ this readme mostly tracks the stuff that still needs to be done/pushed:
 - serve user only one completely random queue if the query does not contain usefull information, instead of 3 seperate queues based off seperate starting points
 - maybe animate more things
 - separate football shoes from all others. if football is not searched explictely, hide football shoes
-- show only best shoe as preview on embedding selection screen (no preselected preview)
