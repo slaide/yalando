@@ -222,7 +222,7 @@ var app=new Vue({
 		},
 		setShoeText:function(shoe,ev){
 			if(!shoe || shoe.name.length==0)return;
-		    let t={left:"\u{1F44E}",text:"Click to ?",right:"\u{1F44D}"};
+		    let t={left:"\u{1F44D}",text:"Click to ?",right:"\u{1F44E}"};
 
         if (ev){
   		    let target=ev.target;
@@ -230,12 +230,12 @@ var app=new Vue({
   		        target=target.parentNode;
   		    }
 
-  		    if(ev.pageX>(target.getBoundingClientRect().left+target.clientWidth*0.5)){
+  		    if(ev.pageX<(target.getBoundingClientRect().left+target.clientWidth*0.5)){
   		        t.text="Click to Like";
-  		        t.r=true;
+  		        t.l=true;
   		    }else{
   		        t.text="Click to Dislike";
-  		        t.l=true;
+  		        t.r=true;
   		    }
         }
 			this.current_shoe.click_text=t;
