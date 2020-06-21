@@ -30,9 +30,9 @@ var app=new Vue({
       queue:[],
     },
     preferences:[
-      {name:"Review",description:"These shoes are described similarly by other users.",shoe_previews:[],randomized:false},
-      {name:"Interaction",description:"These shoes are often on the same wishlist.",shoe_previews:[],randomized:false},
-      {name:"Image",description:"These shoes look similar.",shoe_previews:[],randomized:false},
+      {name:"Custom Opinion",description:"Products that are described similar in product reviews regarding material, color, style, fit and purpose of use.",shoe_previews:[],randomized:false},
+      {name:"Customer Preference",description:"Product that have similar attributes and composition.",shoe_previews:[],randomized:false},
+      {name:"Customer Perception",description:"Products that are similar from a visual perspective.",shoe_previews:[],randomized:false},
     ],
     current_preference:{},
     current_shoe:{},
