@@ -8,7 +8,7 @@ var app=new Vue({
         searchExample:[
             "shoes for athletic men",
             "green shoes for a woman going on a business date",
-            "id:AC8025"
+            "id:AC8205"
         ],
         current_gender:{},
         genders:[
