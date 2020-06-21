@@ -57,7 +57,7 @@
 							</div>
 						</div>
 						<div class="crop3_1_1_2 pointer document-height-3" v-bind:class="{foreground:preference.focused}" v-for="preference in preferences" v-on:mouseenter="peekPreference(preference)" v-on:click="setPreference(preference)">
-							<div class="crop3_1_1_2_1">{{preference.name}}</div>
+							<div class="crop3_1_1_2_1">{{preference.title}}</div>
 							<div class="crop3_1_1_2_2">
 								<span v-if="preference.randomized">Due to insufficient data, these results are randomized, for your current search.</span>
 								<span v-else>{{preference.description}}</span>
@@ -96,7 +96,7 @@
 							</ul>
 						</div>
 						<div id="crop4_1_1_4">
-							<div class="crop4_1_1_4_1">Common Words used in Reviews</div>
+							<div class="crop4_1_1_4_1">Common Words in Reviews</div>
 							<ul class="crop4_1_1_4_2">
 								<li class="crop4_1_1_4_2_1" v-for="word in current_shoe.words">{{word}}</li>
 							</ul>

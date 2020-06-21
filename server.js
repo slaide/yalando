@@ -735,7 +735,7 @@ responseMap['/getshoes'] = function (response, request) {
             catch (e) {
                 response.writeHead(404, htmlContent);
                 response.end("<!doctype html><html><body>invalid input</body></html>");
-                console.log("invalid getshoes input: ", e.message);
+                console.log("invalid getshoes input: ", e.message ? e.message : e);
                 throw e;
             }
         });

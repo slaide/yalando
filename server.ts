@@ -690,7 +690,6 @@ responseMap['/getshoes']=function(response:typeof http.ServerResponse,request:ty
 				}
 
 				//console.log(user.preference);
-
 				let ret=[];
 				for(let i=0;i<count;i++){
 					let s=user.preference.shift();
@@ -715,7 +714,7 @@ responseMap['/getshoes']=function(response:typeof http.ServerResponse,request:ty
 			}catch(e){
 				response.writeHead(404,htmlContent);
 				response.end("<!doctype html><html><body>invalid input</body></html>");
-				console.log("invalid getshoes input: ",e.message);
+				console.log("invalid getshoes input: ",e.message?e.message:e);
         throw e;
 			}
 		});
