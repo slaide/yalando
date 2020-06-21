@@ -10,4 +10,3 @@ this readme mostly tracks the stuff that still needs to be done/pushed:
 - maybe animate more things
 - separate football shoes from all others. if football is not searched explictely, hide football shoes
 - show only best shoe as preview on embedding selection screen (no preselected preview)
-- dislike right, like left
