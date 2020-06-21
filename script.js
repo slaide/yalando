@@ -37,9 +37,9 @@ var app=new Vue({
     current_preference:{},
     current_shoe:{},
     recommend:true,
-    wishlist_empty:{id:"Empty",name:"Wishlist is currently empty",price:"",price_text:"Like a shoe in the Preview Panel to add it to the Wishlist for further inspection."},
-    preview_empty:{id:"Empty",name:"No more recommendations",price:"",price_text:"Sadly, we do not have more recommendations for you. You can either view and interact with your wishlist, or start a new search from the wishlist panel."},
-    unselected_shoe:{id:"Empty",name:"Select a shoe for a preview",price:"",price_text:"Move your mouse on a shoe to view it in detail."},
+    wishlist_empty:{id:"",name:"The Wishlist is currently empty",price:"",price_text:"",text:"Like a shoe in the preview panel to add it to the Wishlist for further inspection."},
+    preview_empty:{id:"",name:"No more recommendations",price:"",price_text:"",text:"Sadly, we do not have more recommendations for you. You can either view and interact with your wishlist, or start a new search from the wishlist panel."},
+    unselected_shoe:{id:"",name:"Select a shoe for a preview",price:"",price_text:"",text:"Move your mouse on a shoe to view it in detail."},
     blank_shoe:{id:"",name:"",price:"",price_text:"",bullets:[],words:[],src:"",click_text:{},real:false},
   },
   methods:{
@@ -397,15 +397,21 @@ var app=new Vue({
       this.user.queue=this.user.wishlist_show;
       this.recommend=false;
 
-      /*if (this.wishlistLength!=0){
+      if (this.wishlistLength!=0){
         this.current_shoe=this.unselected_shoe;
       }else{
         this.current_shoe=this.wishlist_empty;
-      }*/
+      }
     },
     showRecommendations:function(){
       this.user.queue=this.user.recommendations;
       this.recommend=true;
+
+      if (this.user.recommendations.length!=0){
+        this.current_shoe=this.unselected_shoe;
+      }else{
+        this.current_shoe=this.recommendations_empty;
+      }
     },
     buyShoes:function(){
       if(!this.buyButtonClasses.pointer){

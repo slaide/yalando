@@ -88,20 +88,21 @@
 				<div id="crop4_1" class="flex-4">
 					<div id="crop4_1_1" class="horizontal-center relative">
 						<div id="crop4_1_1_1" class="relative horizontal-center">{{current_shoe.name}}</div>
-						<div id="crop4_1_1_2" class="relative horizontal-center document-height-1">{{current_shoe.price_text}}</div>
-						<div id="crop4_1_1_3">
+						<div id="crop4_1_1_2" class="relative horizontal-center document-height-1" v-if="current_shoe.id!=''">{{current_shoe.price_text}}</div>
+						<div id="crop4_1_1_3" v-if="current_shoe.id!=''">
 							<div class="crop4_1_1_3_1">Manufacturer Description</div>
 							<ul class="crop4_1_1_3_2">
 								<li class="crop4_1_1_3_2_1" v-for="bullet in current_shoe.bullets">{{bullet}}</li>
 							</ul>
 						</div>
-						<div id="crop4_1_1_4">
+						<div id="crop4_1_1_4" v-if="current_shoe.id!=''">
 							<div class="crop4_1_1_4_1">Common Words in Reviews</div>
 							<ul class="crop4_1_1_4_2">
 								<li class="crop4_1_1_4_2_1" v-for="word in current_shoe.words">{{word}}</li>
 							</ul>
 						</div>
-						<div id="crop4_1_1_5" class="pointer" v-on:click="proposeIdSearch(current_shoe.id)">ID: {{current_shoe.id}}</div>
+						<div id="crop4_1_1_5" class="pointer" v-on:click="proposeIdSearch(current_shoe.id)" v-if="current_shoe.id!=''">ID: {{current_shoe.id}}</div>
+						<div id="crop4_1_1_6" class="pointer" v-if="current_shoe.id==''">{{current_shoe.text}}</div>
 					</div>
 				</div>
 				<div id="crop4_2" class="flex-8">

@@ -134,10 +134,13 @@
   display:list-item;
   padding-bottom:calc(var(--document-height)/100*1.25);
 }
-#crop4_1_1_5{
+#crop4_1_1_5,#crop4_1_1_6{
 	font-size: calc(var(--document-height)/100*3.5);
   padding-top: calc(var(--document-height)/100*2.0);
 	padding-bottom: calc(var(--document-height)/100*2.0);
+}
+#crop4_1_1_6{
+  padding-top: calc(var(--document-height)/100*4.0);
 }
 
 
