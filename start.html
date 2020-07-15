@@ -57,10 +57,10 @@
 							</div>
 						</div>
 						<div class="crop3_1_1_2 pointer document-height-3" v-bind:class="{foreground:preference.focused}" v-for="preference in preferences" v-on:mouseenter="peekPreference(preference)" v-on:click="setPreference(preference)">
-							<div class="crop3_1_1_2_1">{{preference.title}}</div>
-							<div class="crop3_1_1_2_2">
-								<span v-if="preference.randomized">Due to insufficient data, these results are randomized, for your current search.</span>
-								<span v-else>{{preference.description}}</span>
+							<div class="crop3_1_1_2_1" style="transition: all 0s;">{{preference.title}}</div>
+							<div class="crop3_1_1_2_2" style="transition: all 0s;">
+								<span v-if="preference.randomized" style="transition: all 0s;">Due to insufficient data, these results are randomized, for your current search.</span>
+								<span v-else style="transition: all 0s;">{{preference.description}}</span>
 							</div>
 						</div>
 					</div>
