@@ -590,12 +590,18 @@ function rank_by_images(keys, best_score) {
         scores[key] = cos_similarity(shoes[key].image_embeddings, best_score);
     }
     var ret = keys.slice().sort(function (s1, s2) { return scores[s2] - scores[s1]; });
+    var max_score = 0.0;
+    for (var _a = 0, keys_4 = keys; _a < keys_4.length; _a++) {
+        var key = keys_4[_a];
+        max_score = Math.max(scores[key], max_score);
+    }
+    console.log(max_score);
     return ret;
 }
 function rank_by_interactions(keys, best_score) {
     var scores = {};
-    for (var _i = 0, keys_4 = keys; _i < keys_4.length; _i++) {
-        var key = keys_4[_i];
+    for (var _i = 0, keys_5 = keys; _i < keys_5.length; _i++) {
+        var key = keys_5[_i];
         scores[key] = cos_similarity(shoes[key].interaction_embeddings, best_score);
     }
     var ret = keys.slice().sort(function (s1, s2) { return scores[s2] - scores[s1]; });
@@ -603,8 +609,8 @@ function rank_by_interactions(keys, best_score) {
 }
 function rank_by_review_score(keys, best_score) {
     var scores = {};
-    for (var _i = 0, keys_5 = keys; _i < keys_5.length; _i++) {
-        var key = keys_5[_i];
+    for (var _i = 0, keys_6 = keys; _i < keys_6.length; _i++) {
+        var key = keys_6[_i];
         scores[key] = cos_similarity(shoes[key].review_embeddings, best_score);
     }
     var ret = keys.slice().sort(function (s1, s2) { return scores[s2] - scores[s1]; });
@@ -777,20 +783,31 @@ responseMap['/improve'] = function (response, request) {
                             var shoe = shoes[key];
                             if (!shoe)
                                 continue; //throw "image, invalid shoe id "+key;
+                            console.log(key);
                             if (typeof best_shoe == "undefined") {
-                                best_shoe = shoe.image_embeddings;
+                                best_shoe = {};
+                                for (var _b = 0, _c = Object.keys(shoe.image_embeddings); _b < _c.length; _b++) {
+                                    var image_key = _c[_b];
+                                    best_shoe[image_key] = parseFloat(shoe.image_embeddings[image_key]);
+                                }
                             }
                             else {
-                                for (var _b = 0, _c = Object.keys(best_shoe); _b < _c.length; _b++) {
-                                    var key_1 = _c[_b];
-                                    best_shoe[key_1] += shoe.image_embeddings[key_1];
+                                for (var _d = 0, _e = Object.keys(best_shoe); _d < _e.length; _d++) {
+                                    var key_1 = _e[_d];
+                                    best_shoe[key_1] += parseFloat(shoe.image_embeddings[key_1]);
                                 }
                             }
                             c++;
                         }
-                        for (var _d = 0, _e = Object.keys(best_shoe); _d < _e.length; _d++) {
-                            var key = _e[_d];
+                        console.log(c);
+                        for (var _f = 0, _g = Object.keys(best_shoe); _f < _g.length; _f++) {
+                            var key = _g[_f];
                             best_shoe[key] /= c;
+                        }
+                        //console.log(best_shoe);
+                        for (var _h = 0, recs_2 = recs; _h < recs_2.length; _h++) {
+                            var key = recs_2[_h];
+                            user.preference.push(key);
                         }
                         user.preference = rank_by_images(user.preference, best_shoe);
                         break;
@@ -798,25 +815,33 @@ responseMap['/improve'] = function (response, request) {
                     case "Review": {
                         var best_shoe = void 0;
                         var c = 0;
-                        for (var _f = 0, wishlisted_2 = wishlisted; _f < wishlisted_2.length; _f++) {
-                            var key = wishlisted_2[_f];
+                        for (var _j = 0, wishlisted_2 = wishlisted; _j < wishlisted_2.length; _j++) {
+                            var key = wishlisted_2[_j];
                             var shoe = shoes[key];
                             if (!shoe)
                                 continue; //throw "review, invalid shoe id "+key;
                             if (typeof best_shoe == "undefined") {
-                                best_shoe = shoe.review_embeddings;
+                                best_shoe = {};
+                                for (var _k = 0, _l = Object.keys(shoe.review_embeddings); _k < _l.length; _k++) {
+                                    var image_key = _l[_k];
+                                    best_shoe[image_key] = parseFloat(shoe.review_embeddings[image_key]);
+                                }
                             }
                             else {
-                                for (var _g = 0, _h = Object.keys(best_shoe); _g < _h.length; _g++) {
-                                    var key_2 = _h[_g];
-                                    best_shoe[key_2] += shoe.review_embeddings[key_2];
+                                for (var _m = 0, _o = Object.keys(best_shoe); _m < _o.length; _m++) {
+                                    var key_2 = _o[_m];
+                                    best_shoe[key_2] += parseFloat(shoe.review_embeddings[key_2]);
                                 }
                             }
                             c++;
                         }
-                        for (var _j = 0, _k = Object.keys(best_shoe); _j < _k.length; _j++) {
-                            var key = _k[_j];
+                        for (var _p = 0, _q = Object.keys(best_shoe); _p < _q.length; _p++) {
+                            var key = _q[_p];
                             best_shoe[key] /= c;
+                        }
+                        for (var _r = 0, recs_3 = recs; _r < recs_3.length; _r++) {
+                            var key = recs_3[_r];
+                            user.preference.push(key);
                         }
                         user.preference = rank_by_review_score(user.preference, best_shoe);
                         break;
@@ -824,24 +849,32 @@ responseMap['/improve'] = function (response, request) {
                     case "Interaction": {
                         var best_shoe = void 0;
                         var c = 0;
-                        for (var _l = 0, wishlisted_3 = wishlisted; _l < wishlisted_3.length; _l++) {
-                            var key = wishlisted_3[_l];
+                        for (var _s = 0, wishlisted_3 = wishlisted; _s < wishlisted_3.length; _s++) {
+                            var key = wishlisted_3[_s];
                             var shoe = shoes[key];
                             if (!shoe)
                                 continue; //throw "interaction, invalid shoe id "+key;
                             if (typeof best_shoe == "undefined") {
-                                best_shoe = shoe.interaction_embeddings;
+                                best_shoe = {};
+                                for (var _t = 0, _u = Object.keys(shoe.interaction_embeddings); _t < _u.length; _t++) {
+                                    var image_key = _u[_t];
+                                    best_shoe[image_key] = parseFloat(shoe.interaction_embeddings[image_key]);
+                                }
                             }
                             else {
-                                for (var _m = 0, _o = Object.keys(best_shoe); _m < _o.length; _m++) {
-                                    var key_3 = _o[_m];
-                                    best_shoe[key_3] += shoe.interaction_embeddings[key_3];
+                                for (var _v = 0, _w = Object.keys(best_shoe); _v < _w.length; _v++) {
+                                    var key_3 = _w[_v];
+                                    best_shoe[key_3] += parseFloat(shoe.interaction_embeddings[key_3]);
                                 }
                             }
                             c++;
                         }
-                        for (var _p = 0, _q = Object.keys(best_shoe); _p < _q.length; _p++) {
-                            var key = _q[_p];
+                        for (var _x = 0, recs_4 = recs; _x < recs_4.length; _x++) {
+                            var key = recs_4[_x];
+                            user.preference.push(key);
+                        }
+                        for (var _y = 0, _z = Object.keys(best_shoe); _y < _z.length; _y++) {
+                            var key = _z[_y];
                             best_shoe[key] /= c;
                         }
                         user.preference = rank_by_review_score(user.preference, best_shoe);

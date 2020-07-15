@@ -561,6 +561,12 @@ function rank_by_images(keys,best_score){
 	}
 	let ret=keys.slice().sort((s1,s2)=>scores[s2]-scores[s1]);
 
+  let max_score=0.0;
+  for (const key of keys){
+    max_score=Math.max(scores[key],max_score);
+  }
+  console.log(max_score);
+
 	return ret;
 }
 function rank_by_interactions(keys,best_score){
@@ -756,17 +762,27 @@ responseMap['/improve']=function(response:typeof http.ServerResponse,request:typ
 							const shoe=shoes[key];
 							if(!shoe) continue;//throw "image, invalid shoe id "+key;
 
+              console.log(key);
+
 							if(typeof best_shoe=="undefined"){
-								best_shoe=shoe.image_embeddings;
+                best_shoe={};
+                for (const image_key of Object.keys(shoe.image_embeddings)){
+  								best_shoe[image_key]=parseFloat(shoe.image_embeddings[image_key]);
+                }
 							}else{
 								for(const key of Object.keys(best_shoe)){
-									best_shoe[key]+=shoe.image_embeddings[key];
+									best_shoe[key]+=parseFloat(shoe.image_embeddings[key]);
 								}
 							}
 							c++;
 						}
+            console.log(c);
 						for(const key of Object.keys(best_shoe)){
 							best_shoe[key]/=c;
+						}
+            //console.log(best_shoe);
+						for(const key of recs){
+              user.preference.push(key);
 						}
 						user.preference=rank_by_images(user.preference,best_shoe);
 						break;
@@ -779,16 +795,22 @@ responseMap['/improve']=function(response:typeof http.ServerResponse,request:typ
 							if(!shoe) continue;//throw "review, invalid shoe id "+key;
 
 							if(typeof best_shoe=="undefined"){
-								best_shoe=shoe.review_embeddings;
+                best_shoe={};
+                for (const image_key of Object.keys(shoe.review_embeddings)){
+  								best_shoe[image_key]=parseFloat(shoe.review_embeddings[image_key]);
+                }
 							}else{
 								for(const key of Object.keys(best_shoe)){
-									best_shoe[key]+=shoe.review_embeddings[key];
+									best_shoe[key]+=parseFloat(shoe.review_embeddings[key]);
 								}
 							}
 							c++;
 						}
 						for(const key of Object.keys(best_shoe)){
 							best_shoe[key]/=c;
+						}
+						for(const key of recs){
+              user.preference.push(key);
 						}
 						user.preference=rank_by_review_score(user.preference,best_shoe);
 						break;
@@ -801,13 +823,19 @@ responseMap['/improve']=function(response:typeof http.ServerResponse,request:typ
 							if(!shoe) continue;//throw "interaction, invalid shoe id "+key;
 
 							if(typeof best_shoe=="undefined"){
-								best_shoe=shoe.interaction_embeddings;
+                best_shoe={};
+                for (const image_key of Object.keys(shoe.interaction_embeddings)){
+  								best_shoe[image_key]=parseFloat(shoe.interaction_embeddings[image_key]);
+                }
 							}else{
 								for(const key of Object.keys(best_shoe)){
-									best_shoe[key]+=shoe.interaction_embeddings[key];
+									best_shoe[key]+=parseFloat(shoe.interaction_embeddings[key]);
 								}
 							}
 							c++;
+						}
+						for(const key of recs){
+              user.preference.push(key);
 						}
 						for(const key of Object.keys(best_shoe)){
 							best_shoe[key]/=c;
