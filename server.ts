@@ -754,7 +754,7 @@ responseMap['/improve']=function(response:typeof http.ServerResponse,request:typ
 						//calc median vector of embeddings of wishlisted shoes as best shoe embeddings
 						for(const key of wishlisted){
 							const shoe=shoes[key];
-							if(!shoe) throw "image, invalid shoe id "+key;
+							if(!shoe) continue;//throw "image, invalid shoe id "+key;
 
 							if(typeof best_shoe=="undefined"){
 								best_shoe=shoe.image_embeddings;
@@ -776,7 +776,7 @@ responseMap['/improve']=function(response:typeof http.ServerResponse,request:typ
 						let c=0;
 						for(const key of wishlisted){
 							const shoe=shoes[key];
-							if(!shoe) throw "review, invalid shoe id "+key;
+							if(!shoe) continue;//throw "review, invalid shoe id "+key;
 
 							if(typeof best_shoe=="undefined"){
 								best_shoe=shoe.review_embeddings;
@@ -798,7 +798,7 @@ responseMap['/improve']=function(response:typeof http.ServerResponse,request:typ
 						let c=0;
 						for(const key of wishlisted){
 							const shoe=shoes[key];
-							if(!shoe) throw "interaction, invalid shoe id "+key;
+							if(!shoe) continue;//throw "interaction, invalid shoe id "+key;
 
 							if(typeof best_shoe=="undefined"){
 								best_shoe=shoe.interaction_embeddings;
@@ -823,7 +823,7 @@ responseMap['/improve']=function(response:typeof http.ServerResponse,request:typ
 				response.writeHead(200,jsonContent);
 				response.end(JSON.stringify({improved:true}));
 			}catch(e){
-				console.log("queue improvement failed because:",e.message);
+				console.log("queue improvement failed because:",e,e.message);
         response.end();
 			}
 		});

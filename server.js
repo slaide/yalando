@@ -776,7 +776,7 @@ responseMap['/improve'] = function (response, request) {
                             var key = wishlisted_1[_a];
                             var shoe = shoes[key];
                             if (!shoe)
-                                throw "image, invalid shoe id " + key;
+                                continue; //throw "image, invalid shoe id "+key;
                             if (typeof best_shoe == "undefined") {
                                 best_shoe = shoe.image_embeddings;
                             }
@@ -802,7 +802,7 @@ responseMap['/improve'] = function (response, request) {
                             var key = wishlisted_2[_f];
                             var shoe = shoes[key];
                             if (!shoe)
-                                throw "review, invalid shoe id " + key;
+                                continue; //throw "review, invalid shoe id "+key;
                             if (typeof best_shoe == "undefined") {
                                 best_shoe = shoe.review_embeddings;
                             }
@@ -828,7 +828,7 @@ responseMap['/improve'] = function (response, request) {
                             var key = wishlisted_3[_l];
                             var shoe = shoes[key];
                             if (!shoe)
-                                throw "interaction, invalid shoe id " + key;
+                                continue; //throw "interaction, invalid shoe id "+key;
                             if (typeof best_shoe == "undefined") {
                                 best_shoe = shoe.interaction_embeddings;
                             }
@@ -854,7 +854,7 @@ responseMap['/improve'] = function (response, request) {
                 response.end(JSON.stringify({ improved: true }));
             }
             catch (e) {
-                console.log("queue improvement failed because:", e.message);
+                console.log("queue improvement failed because:", e, e.message);
                 response.end();
             }
         });
