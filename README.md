@@ -4,3 +4,4 @@ this readme mostly tracks the stuff that still needs to be done/pushed:
 - serve user only one completely random queue if the query does not contain useful information, instead of 3 separate queues based off separate starting points
 - separate football shoes from all others -> if football is not searched explicitly, hide football shoes
 - maybe animate more things
+- implement a function where the user can go back to select another embedding
