@@ -7,7 +7,7 @@ var app=new Vue({
     searchButtonText: "Search",
     searchExample:[
       "shoes for athletic men",
-      "green shoes for a woman going on a business date",
+      "blue shoes for leisure activities",
       "id:AC8205"
     ],
     current_gender:{},
@@ -30,8 +30,8 @@ var app=new Vue({
       queue:[],
     },
     preferences:[
-      {title:"Customer Opinion",name:"Review",description:"Products that are described similarly in product reviews.",shoe_previews:[],randomized:false},
-      {title:"Customer Preference",name:"Interaction",description:"Product that have similar attributes and composition.",shoe_previews:[],randomized:false},
+      {title:"Customer Opinion",name:"Review",description:"Products that are similarly described in product reviews.",shoe_previews:[],randomized:false},
+      {title:"Customer Preference",name:"Interaction",description:"Products that have similar attributes and composition.",shoe_previews:[],randomized:false},
       {title:"Customer Perception",name:"Image",description:"Products that are similar from a visual perspective.",shoe_previews:[],randomized:false},
     ],
     current_preference:{},
@@ -39,7 +39,7 @@ var app=new Vue({
     recommend:true,
     wishlist_empty:{id:"",name:"The Wishlist is currently empty",price:"",price_text:"",text:"Like a recommended shoe to add it to the Wishlist."},
     recommendations_empty:{id:"",name:"No more recommendations",price:"",price_text:"",text:"Sadly, we do not have more recommendations for you. You can either view and interact with your wishlist, or start a new search from the wishlist panel."},
-    unselected_shoe:{id:"",name:"Select a shoe to see it in detail",price:"",price_text:"",text:"Move your mouse on a shoe to view it in detail."},
+    unselected_shoe:{id:"",name:"No shoe is currently selected.",price:"",price_text:"",text:"Move your mouse on a shoe to view it in detail."},
     blank_shoe:{id:"",name:"",price:"",price_text:"",bullets:[],words:[],src:"",click_text:{},real:false},
   },
   methods:{
