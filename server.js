@@ -326,13 +326,14 @@ function get_user_recommendations(user) {
             var word_found = false;
             var discard_shoe = false;
             var ignore_category = false;
-            for (var _c = 0, _d = user.query.split(" "); _c < _d.length; _c++) {
-                var word = _d[_c];
+            var user_query_words = user.query.toLowerCase().split(" ");
+            for (var _c = 0, user_query_words_1 = user_query_words; _c < user_query_words_1.length; _c++) {
+                var word = user_query_words_1[_c];
                 if (discard_shoe)
                     break;
-                if (shoe.review_embeddings[word.toLowerCase()])
+                if (shoe.review_embeddings[word])
                     ignore_category = true;
-                switch (word.toLowerCase()) {
+                switch (word) {
                     case "green": {
                         if (shoe.color != "GRE")
                             discard_shoe = true;
@@ -401,11 +402,11 @@ function get_user_recommendations(user) {
                     }
                 }
             }
-            for (var _e = 0, _f = user.query.split(" "); _e < _f.length; _e++) {
-                var word = _f[_e];
+            for (var _d = 0, user_query_words_2 = user_query_words; _d < user_query_words_2.length; _d++) {
+                var word = user_query_words_2[_d];
                 if (discard_shoe)
                     break;
-                switch (word.toLowerCase()) {
+                switch (word) {
                     case "running": {
                         if (shoe.category != "RUNNING" && !ignore_category)
                             discard_shoe = true;
@@ -514,6 +515,9 @@ function get_user_recommendations(user) {
                     }
                 }
             }
+            //discard football shoes if user does not explicitely search for football shoes
+            if (user_query_words.indexOf("soccer") == -1 && shoe.category == "FOOTBALL/SOCCER")
+                discard_shoe = true;
             if (discard_shoe)
                 continue;
             shoe_keys.push(key);

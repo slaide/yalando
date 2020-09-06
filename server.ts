@@ -331,10 +331,11 @@ function get_user_recommendations(user){
   		let word_found=false;
   		let discard_shoe=false;
   		let ignore_category=false;
-  		for(const word of user.query.split(" ")){
+  		let user_query_words=user.query.toLowerCase().split(" ");
+  		for(const word of user_query_words){
   			if(discard_shoe) break;
-  			if(shoe.review_embeddings[word.toLowerCase()]) ignore_category=true;
-  			switch(word.toLowerCase()){
+  			if(shoe.review_embeddings[word]) ignore_category=true;
+  			switch(word){
   				case "green":{
   					if(shoe.color!="GRE") discard_shoe=true;
   					break;
@@ -391,9 +392,9 @@ function get_user_recommendations(user){
   			}
   		}
 
-  		for(const word of user.query.split(" ")){
+  		for(const word of user_query_words){
   			if(discard_shoe) break;
-  			switch(word.toLowerCase()){
+  			switch(word){
   				case "running":{
   					if (shoe.category!="RUNNING" && !ignore_category) discard_shoe=true;
   					break;
@@ -481,6 +482,10 @@ function get_user_recommendations(user){
   				}
   			}
   		}
+
+  		//discard football shoes if user does not explicitely search for football shoes
+  		if(user_query_words.indexOf("soccer")==-1 && shoe.category=="FOOTBALL/SOCCER") discard_shoe=true;
+
   		if(discard_shoe) continue;
 
   		shoe_keys.push(key);
