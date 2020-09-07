@@ -3,12 +3,73 @@ const fs=require("fs");
 const url=require("url");
 const querystring=require("querystring");
 
+function min(a,b=undefined){
+  if(typeof b == "undefined" && Array.isArray(a)){
+    let minimum=a[0];
+    for (const e of a){
+      minimum=min(e,minimum);
+    }
+    return minimum;
+  }
+  return (a<b)?a:b;
+}
+function max(a,b=undefined){
+  if(typeof b == "undefined" && Array.isArray(a)){
+    let maximum=a[0];
+    for (const e of a){
+      maximum=max(e,maximum);
+    }
+    return maximum;
+  }
+  return (a>b)?a:b;
+}
+function sum(a,b=undefined){
+  if(typeof b=="undefined"){
+    if(Object.keys(a).length>0){
+      let s=a[0];
+      let index=0;
+      for(const key of Object.keys(a)){
+        if(index!=0) s=sum(s,a[key]);
+        index+=1;
+      }
+      return s;
+    }else{
+      return a || 0;
+    }
+  }else{
+    if(typeof a=="undefined"){
+      return sum(b);
+    }else{
+      const a_keys=Object.keys(a);
+      const b_keys=Object.keys(b);
+      if(a_keys.length>0 && b_keys.length>0){
+        let s=[];
+        for(const key of a_keys){
+          s.push(sum(a[key],b[key]));
+        }
+        return s;
+      }else{
+        let nan_protect_a=parseFloat(a);
+        let nan_protect_b=parseFloat(b);
+        if(isNaN(nan_protect_a)){
+          return isNaN(nan_protect_b)?0:nan_protect_b;
+        }else{
+          let nan_protect_sum=nan_protect_a+nan_protect_b;
+          return isNaN(nan_protect_sum)?nan_protect_a:nan_protect_sum;
+        }
+      }
+    }
+  }
+}
 function shuffle_array(a) {
     for (let i = a.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [a[i], a[j]] = [a[j], a[i]];
     }
     return a;
+}
+function abs(v){
+  return (v<0)?-v:v;
 }
 
 const hostname:string = '127.0.0.1';
@@ -498,16 +559,18 @@ function get_user_recommendations(user){
 
 	let review_ranked=rank_by_reviews(shoe_keys,user);
 
-	//if no review words are found, randomize search results a bit
-	if(review_ranked.ms==0.0 && !search_id){
+	//if no review words are found, randomize search results and signal to the client that all queues are random (though only one is sent because sending multiple completely random queues is confusing)
+	if(review_ranked.ms<0.0000001 && !search_id){
 		const shuffled_shoes=shuffle_array(review_ranked.r.slice());
 
 		ret.review=shuffled_shoes;
-		ret.image=rank_by_images(shoe_keys,shoes[shuffled_shoes[Math.floor(Math.random()*6)]].image_embeddings);
-		ret.interaction=rank_by_interactions(shoe_keys,shoes[shuffled_shoes[Math.floor(Math.random()*6)]].interaction_embeddings);
+		ret.image=[];
+		ret.interaction=[];
     ret.randomized.review=true;
     ret.randomized.image=true;
     ret.randomized.interaction=true;
+
+    user.all_queues_random=true;
   }else if(search_id){
 		const best_shoe=shoes[id];
     ret.review=rank_by_review_score(shoe_keys,best_shoe.review_embeddings);
@@ -628,6 +691,7 @@ responseMap['/senduser']=function(response:typeof http.ServerResponse,request:ty
 		request.on('end',()=>{
 			try{
 				let user=JSON.parse(data);
+        user.all_queues_random=false;
 				let id=user_data.next_id;
 				user_data.next_id++;
 
@@ -758,6 +822,111 @@ responseMap['/improve']=function(response:typeof http.ServerResponse,request:typ
 					if(!!key) user.recommendations.push(key);
 				}
 
+        if(!!user.all_queues_random){
+          let image_scores=[];
+          let temp_embeddings=[];
+
+          //create list with embedding of each wishlisted shoe
+          for(const shoe_key of wishlisted){
+            if(typeof shoe_key=="undefined" || shoe_key.length==0) continue;
+            if(typeof shoes[shoe_key]=="undefined") throw new Error(`shoe for id not found. what? ${shoe_key}`);
+            temp_embeddings.push(shoes[shoe_key].image_embeddings);
+          }
+          //get emebdding of first shoe to build average embedding
+          let average_embedding=temp_embeddings[0];
+          //for each wishlisted shoe (after the first)
+          for(const embedding of temp_embeddings.slice(1)){
+            //for each key of the embedding
+            for(const key of Object.keys(embedding)){
+              //add indexed value to to-be-averaged-embedding
+              average_embedding[key]+=embedding[key];
+            }
+          }
+          for(const key of Object.keys(average_embedding)){
+            average_embedding[key]/=temp_embeddings.length;
+          }
+          for(const embedding of temp_embeddings){
+            image_scores.push(embedding,average_embedding);
+          }
+
+          let review_scores=[];
+          temp_embeddings=[];
+
+          //create list with embedding of each wishlisted shoe
+          for(const shoe_key of wishlisted){
+            if(typeof shoe_key=="undefined" || shoe_key.length==0) continue;
+            if(typeof shoes[shoe_key]=="undefined") throw new Error(`shoe for id not found. what? ${shoe_key}`);
+            temp_embeddings.push(shoes[shoe_key].review_embeddings);
+          }
+          //get emebdding of first shoe to build average embedding
+          average_embedding=temp_embeddings[0];
+          //for each wishlisted shoe (after the first)
+          for(const embedding of temp_embeddings.slice(1)){
+            //for each key of the embedding
+            for(const key of Object.keys(embedding)){
+              //add indexed value to to-be-averaged-embedding
+              average_embedding[key]+=embedding[key];
+            }
+          }
+          for(const key of Object.keys(average_embedding)){
+            average_embedding[key]/=temp_embeddings.length;
+          }
+          for(const embedding of temp_embeddings){
+            review_scores.push(embedding,average_embedding);
+          }
+
+          let interaction_scores=[];
+          temp_embeddings=[];
+
+          //create list with embedding of each wishlisted shoe
+          for(const shoe_key of wishlisted){
+            if(typeof shoe_key=="undefined" || shoe_key.length==0) continue;
+            if(typeof shoes[shoe_key]=="undefined") throw new Error(`shoe for id not found. what? ${shoe_key}`);
+            temp_embeddings.push(shoes[shoe_key].interaction_embeddings);
+          }
+          //get emebdding of first shoe to build average embedding
+          average_embedding=temp_embeddings[0];
+          //for each wishlisted shoe (after the first)
+          for(const embedding of temp_embeddings.slice(1)){
+            //for each key of the embedding
+            for(const key of Object.keys(embedding)){
+              //add indexed value to to-be-averaged-embedding
+              average_embedding[key]+=embedding[key];
+            }
+          }
+          for(const key of Object.keys(average_embedding)){
+            average_embedding[key]/=temp_embeddings.length;
+          }
+          for(const embedding of temp_embeddings){
+            interaction_scores.push(embedding,average_embedding);
+          }
+
+          const abs_image=abs(sum(sum(image_scores)));
+          const abs_review=abs(sum(sum(review_scores)));
+          const abs_interaction=abs(sum(sum(interaction_scores)));
+
+          const abs_vector=[abs_image,abs_review,abs_interaction];
+          switch(abs_vector.indexOf(min(abs_vector))){
+            case 0:{
+              user.pre_name="Image";
+              console.log("switched random queue to image queue",abs_vector);
+              break;
+            }
+            case 1:{
+              user.pre_name="Review";
+              console.log("switched random queue to review queue",abs_vector);
+              break;
+            }
+            case 2:{
+              user.pre_name="Interaction";
+              console.log("switched random queue to interaction queue",abs_vector);
+              break;
+            }
+            default: throw new Error("unknown minimum preference");
+          }
+          user.all_queues_random=false;
+        }
+
 				switch(user.pref_name){
 					case "Image":{
 						let best_shoe;
@@ -767,7 +936,7 @@ responseMap['/improve']=function(response:typeof http.ServerResponse,request:typ
 							const shoe=shoes[key];
 							if(!shoe) continue;//throw "image, invalid shoe id "+key;
 
-              console.log(key);
+              //console.log(key);
 
 							if(typeof best_shoe=="undefined"){
                 best_shoe={};
@@ -781,7 +950,7 @@ responseMap['/improve']=function(response:typeof http.ServerResponse,request:typ
 							}
 							c++;
 						}
-            console.log(c);
+            //console.log(c);
 						for(const key of Object.keys(best_shoe)){
 							best_shoe[key]/=c;
 						}

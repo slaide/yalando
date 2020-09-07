@@ -12,8 +12,8 @@
     "url": "git+https://github.com/Slaide/yalando.git"
   },
   "author": {
-    "name":"Patrick Hennig",
-    "email":"patrick.hennig@fau.de"
+    "name": "Patrick Hennig",
+    "email": "patrick.hennig@fau.de"
   },
   "license": "ISC",
   "bugs": {
@@ -21,6 +21,6 @@
   },
   "homepage": "https://github.com/Slaide/yalando#readme",
   "devDependencies": {
-    "@types/node": "^14.0.13"
+    "@types/node": "^14.6.3"
   }
 }

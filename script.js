@@ -122,6 +122,10 @@ var app=new Vue({
                   app.current_preference={shoe_previews:app.preferences[0].shoe_previews.slice(0,1)};
                 }
 
+                if (new_shoes.randomized.review == true && new_shoes.randomized.interaction==true && new_shoes.randomized.image==true){
+                  app.setPreference(app.preferences[0]);
+                }
+
               }catch(e){
                 console.log(e.message);
                 let r=window.confirm("Invalid data from server received (either due to invalid input, or an internal error). Do you want to restart the search?");
@@ -219,7 +223,7 @@ var app=new Vue({
       preference.focused=true;
     },
     setPreference:function(preference){
-      if(preference.name=="") return;
+      if(preference.name=="") throw Error("unknown preference",preference);
       this.user.preference=preference;
 
       this.setState('shoes');

@@ -2,6 +2,77 @@ var http = require("http");
 var fs = require("fs");
 var url = require("url");
 var querystring = require("querystring");
+function min(a, b) {
+    if (b === void 0) { b = undefined; }
+    if (typeof b == "undefined" && Array.isArray(a)) {
+        var minimum = a[0];
+        for (var _i = 0, a_1 = a; _i < a_1.length; _i++) {
+            var e = a_1[_i];
+            minimum = min(e, minimum);
+        }
+        return minimum;
+    }
+    return (a < b) ? a : b;
+}
+function max(a, b) {
+    if (b === void 0) { b = undefined; }
+    if (typeof b == "undefined" && Array.isArray(a)) {
+        var maximum = a[0];
+        for (var _i = 0, a_2 = a; _i < a_2.length; _i++) {
+            var e = a_2[_i];
+            maximum = max(e, maximum);
+        }
+        return maximum;
+    }
+    return (a > b) ? a : b;
+}
+function sum(a, b) {
+    if (b === void 0) { b = undefined; }
+    if (typeof b == "undefined") {
+        if (Object.keys(a).length > 0) {
+            var s = a[0];
+            var index = 0;
+            for (var _i = 0, _a = Object.keys(a); _i < _a.length; _i++) {
+                var key = _a[_i];
+                if (index != 0)
+                    s = sum(s, a[key]);
+                index += 1;
+            }
+            return s;
+        }
+        else {
+            return a || 0;
+        }
+    }
+    else {
+        if (typeof a == "undefined") {
+            return sum(b);
+        }
+        else {
+            var a_keys = Object.keys(a);
+            var b_keys = Object.keys(b);
+            if (a_keys.length > 0 && b_keys.length > 0) {
+                var s = [];
+                for (var _b = 0, a_keys_1 = a_keys; _b < a_keys_1.length; _b++) {
+                    var key = a_keys_1[_b];
+                    s.push(sum(a[key], b[key]));
+                }
+                return s;
+            }
+            else {
+                var nan_protect_a = parseFloat(a);
+                var nan_protect_b = parseFloat(b);
+                if (isNaN(nan_protect_a)) {
+                    return isNaN(nan_protect_b) ? 0 : nan_protect_b;
+                }
+                else {
+                    var nan_protect_sum = nan_protect_a + nan_protect_b;
+                    return isNaN(nan_protect_sum) ? nan_protect_a : nan_protect_sum;
+                }
+            }
+        }
+    }
+}
 function shuffle_array(a) {
     var _a;
     for (var i = a.length - 1; i > 0; i--) {
@@ -9,6 +80,9 @@ function shuffle_array(a) {
         _a = [a[j], a[i]], a[i] = _a[0], a[j] = _a[1];
     }
     return a;
+}
+function abs(v) {
+    return (v < 0) ? -v : v;
 }
 var hostname = '127.0.0.1';
 var port = process.env.PORT || 3000;
@@ -526,15 +600,16 @@ function get_user_recommendations(user) {
     //console.log("found this many shoes for a new user:",shoe_keys.length);
     var ret = { image: [], review: [], interaction: [], randomized: { review: false, image: false, interaction: false } };
     var review_ranked = rank_by_reviews(shoe_keys, user);
-    //if no review words are found, randomize search results a bit
-    if (review_ranked.ms == 0.0 && !search_id) {
+    //if no review words are found, randomize search results and signal to the client that all queues are random (though only one is sent because sending multiple completely random queues is confusing)
+    if (review_ranked.ms < 0.0000001 && !search_id) {
         var shuffled_shoes = shuffle_array(review_ranked.r.slice());
         ret.review = shuffled_shoes;
-        ret.image = rank_by_images(shoe_keys, shoes[shuffled_shoes[Math.floor(Math.random() * 6)]].image_embeddings);
-        ret.interaction = rank_by_interactions(shoe_keys, shoes[shuffled_shoes[Math.floor(Math.random() * 6)]].interaction_embeddings);
+        ret.image = [];
+        ret.interaction = [];
         ret.randomized.review = true;
         ret.randomized.image = true;
         ret.randomized.interaction = true;
+        user.all_queues_random = true;
     }
     else if (search_id) {
         var best_shoe = shoes[id];
@@ -651,6 +726,7 @@ responseMap['/senduser'] = function (response, request) {
         request.on('end', function () {
             try {
                 var user = JSON.parse(data_1);
+                user.all_queues_random = false;
                 var id = user_data.next_id;
                 user_data.next_id++;
                 //console.log(user);
@@ -777,40 +853,158 @@ responseMap['/improve'] = function (response, request) {
                     if (!!key)
                         user.recommendations.push(key);
                 }
+                if (!!user.all_queues_random) {
+                    var image_scores = [];
+                    var temp_embeddings = [];
+                    //create list with embedding of each wishlisted shoe
+                    for (var _a = 0, wishlisted_1 = wishlisted; _a < wishlisted_1.length; _a++) {
+                        var shoe_key = wishlisted_1[_a];
+                        if (typeof shoe_key == "undefined" || shoe_key.length == 0)
+                            continue;
+                        if (typeof shoes[shoe_key] == "undefined")
+                            throw new Error("shoe for id not found. what? " + shoe_key);
+                        temp_embeddings.push(shoes[shoe_key].image_embeddings);
+                    }
+                    //get emebdding of first shoe to build average embedding
+                    var average_embedding = temp_embeddings[0];
+                    //for each wishlisted shoe (after the first)
+                    for (var _b = 0, _c = temp_embeddings.slice(1); _b < _c.length; _b++) {
+                        var embedding = _c[_b];
+                        //for each key of the embedding
+                        for (var _d = 0, _e = Object.keys(embedding); _d < _e.length; _d++) {
+                            var key = _e[_d];
+                            //add indexed value to to-be-averaged-embedding
+                            average_embedding[key] += embedding[key];
+                        }
+                    }
+                    for (var _f = 0, _g = Object.keys(average_embedding); _f < _g.length; _f++) {
+                        var key = _g[_f];
+                        average_embedding[key] /= temp_embeddings.length;
+                    }
+                    for (var _h = 0, temp_embeddings_1 = temp_embeddings; _h < temp_embeddings_1.length; _h++) {
+                        var embedding = temp_embeddings_1[_h];
+                        image_scores.push(embedding, average_embedding);
+                    }
+                    var review_scores = [];
+                    temp_embeddings = [];
+                    //create list with embedding of each wishlisted shoe
+                    for (var _j = 0, wishlisted_2 = wishlisted; _j < wishlisted_2.length; _j++) {
+                        var shoe_key = wishlisted_2[_j];
+                        if (typeof shoe_key == "undefined" || shoe_key.length == 0)
+                            continue;
+                        if (typeof shoes[shoe_key] == "undefined")
+                            throw new Error("shoe for id not found. what? " + shoe_key);
+                        temp_embeddings.push(shoes[shoe_key].review_embeddings);
+                    }
+                    //get emebdding of first shoe to build average embedding
+                    average_embedding = temp_embeddings[0];
+                    //for each wishlisted shoe (after the first)
+                    for (var _k = 0, _l = temp_embeddings.slice(1); _k < _l.length; _k++) {
+                        var embedding = _l[_k];
+                        //for each key of the embedding
+                        for (var _m = 0, _o = Object.keys(embedding); _m < _o.length; _m++) {
+                            var key = _o[_m];
+                            //add indexed value to to-be-averaged-embedding
+                            average_embedding[key] += embedding[key];
+                        }
+                    }
+                    for (var _p = 0, _q = Object.keys(average_embedding); _p < _q.length; _p++) {
+                        var key = _q[_p];
+                        average_embedding[key] /= temp_embeddings.length;
+                    }
+                    for (var _r = 0, temp_embeddings_2 = temp_embeddings; _r < temp_embeddings_2.length; _r++) {
+                        var embedding = temp_embeddings_2[_r];
+                        review_scores.push(embedding, average_embedding);
+                    }
+                    var interaction_scores = [];
+                    temp_embeddings = [];
+                    //create list with embedding of each wishlisted shoe
+                    for (var _s = 0, wishlisted_3 = wishlisted; _s < wishlisted_3.length; _s++) {
+                        var shoe_key = wishlisted_3[_s];
+                        if (typeof shoe_key == "undefined" || shoe_key.length == 0)
+                            continue;
+                        if (typeof shoes[shoe_key] == "undefined")
+                            throw new Error("shoe for id not found. what? " + shoe_key);
+                        temp_embeddings.push(shoes[shoe_key].interaction_embeddings);
+                    }
+                    //get emebdding of first shoe to build average embedding
+                    average_embedding = temp_embeddings[0];
+                    //for each wishlisted shoe (after the first)
+                    for (var _t = 0, _u = temp_embeddings.slice(1); _t < _u.length; _t++) {
+                        var embedding = _u[_t];
+                        //for each key of the embedding
+                        for (var _v = 0, _w = Object.keys(embedding); _v < _w.length; _v++) {
+                            var key = _w[_v];
+                            //add indexed value to to-be-averaged-embedding
+                            average_embedding[key] += embedding[key];
+                        }
+                    }
+                    for (var _x = 0, _y = Object.keys(average_embedding); _x < _y.length; _x++) {
+                        var key = _y[_x];
+                        average_embedding[key] /= temp_embeddings.length;
+                    }
+                    for (var _z = 0, temp_embeddings_3 = temp_embeddings; _z < temp_embeddings_3.length; _z++) {
+                        var embedding = temp_embeddings_3[_z];
+                        interaction_scores.push(embedding, average_embedding);
+                    }
+                    var abs_image = abs(sum(sum(image_scores)));
+                    var abs_review = abs(sum(sum(review_scores)));
+                    var abs_interaction = abs(sum(sum(interaction_scores)));
+                    var abs_vector = [abs_image, abs_review, abs_interaction];
+                    switch (abs_vector.indexOf(min(abs_vector))) {
+                        case 0: {
+                            user.pre_name = "Image";
+                            console.log("switched random queue to image queue", abs_vector);
+                            break;
+                        }
+                        case 1: {
+                            user.pre_name = "Review";
+                            console.log("switched random queue to review queue", abs_vector);
+                            break;
+                        }
+                        case 2: {
+                            user.pre_name = "Interaction";
+                            console.log("switched random queue to interaction queue", abs_vector);
+                            break;
+                        }
+                        default: throw new Error("unknown minimum preference");
+                    }
+                    user.all_queues_random = false;
+                }
                 switch (user.pref_name) {
                     case "Image": {
                         var best_shoe = void 0;
                         var c = 0;
                         //calc median vector of embeddings of wishlisted shoes as best shoe embeddings
-                        for (var _a = 0, wishlisted_1 = wishlisted; _a < wishlisted_1.length; _a++) {
-                            var key = wishlisted_1[_a];
+                        for (var _0 = 0, wishlisted_4 = wishlisted; _0 < wishlisted_4.length; _0++) {
+                            var key = wishlisted_4[_0];
                             var shoe = shoes[key];
                             if (!shoe)
                                 continue; //throw "image, invalid shoe id "+key;
-                            console.log(key);
+                            //console.log(key);
                             if (typeof best_shoe == "undefined") {
                                 best_shoe = {};
-                                for (var _b = 0, _c = Object.keys(shoe.image_embeddings); _b < _c.length; _b++) {
-                                    var image_key = _c[_b];
+                                for (var _1 = 0, _2 = Object.keys(shoe.image_embeddings); _1 < _2.length; _1++) {
+                                    var image_key = _2[_1];
                                     best_shoe[image_key] = parseFloat(shoe.image_embeddings[image_key]);
                                 }
                             }
                             else {
-                                for (var _d = 0, _e = Object.keys(best_shoe); _d < _e.length; _d++) {
-                                    var key_1 = _e[_d];
+                                for (var _3 = 0, _4 = Object.keys(best_shoe); _3 < _4.length; _3++) {
+                                    var key_1 = _4[_3];
                                     best_shoe[key_1] += parseFloat(shoe.image_embeddings[key_1]);
                                 }
                             }
                             c++;
                         }
-                        console.log(c);
-                        for (var _f = 0, _g = Object.keys(best_shoe); _f < _g.length; _f++) {
-                            var key = _g[_f];
+                        //console.log(c);
+                        for (var _5 = 0, _6 = Object.keys(best_shoe); _5 < _6.length; _5++) {
+                            var key = _6[_5];
                             best_shoe[key] /= c;
                         }
                         //console.log(best_shoe);
-                        for (var _h = 0, recs_2 = recs; _h < recs_2.length; _h++) {
-                            var key = recs_2[_h];
+                        for (var _7 = 0, recs_2 = recs; _7 < recs_2.length; _7++) {
+                            var key = recs_2[_7];
                             user.preference.push(key);
                         }
                         user.preference = rank_by_images(user.preference, best_shoe);
@@ -819,32 +1013,32 @@ responseMap['/improve'] = function (response, request) {
                     case "Review": {
                         var best_shoe = void 0;
                         var c = 0;
-                        for (var _j = 0, wishlisted_2 = wishlisted; _j < wishlisted_2.length; _j++) {
-                            var key = wishlisted_2[_j];
+                        for (var _8 = 0, wishlisted_5 = wishlisted; _8 < wishlisted_5.length; _8++) {
+                            var key = wishlisted_5[_8];
                             var shoe = shoes[key];
                             if (!shoe)
                                 continue; //throw "review, invalid shoe id "+key;
                             if (typeof best_shoe == "undefined") {
                                 best_shoe = {};
-                                for (var _k = 0, _l = Object.keys(shoe.review_embeddings); _k < _l.length; _k++) {
-                                    var image_key = _l[_k];
+                                for (var _9 = 0, _10 = Object.keys(shoe.review_embeddings); _9 < _10.length; _9++) {
+                                    var image_key = _10[_9];
                                     best_shoe[image_key] = parseFloat(shoe.review_embeddings[image_key]);
                                 }
                             }
                             else {
-                                for (var _m = 0, _o = Object.keys(best_shoe); _m < _o.length; _m++) {
-                                    var key_2 = _o[_m];
+                                for (var _11 = 0, _12 = Object.keys(best_shoe); _11 < _12.length; _11++) {
+                                    var key_2 = _12[_11];
                                     best_shoe[key_2] += parseFloat(shoe.review_embeddings[key_2]);
                                 }
                             }
                             c++;
                         }
-                        for (var _p = 0, _q = Object.keys(best_shoe); _p < _q.length; _p++) {
-                            var key = _q[_p];
+                        for (var _13 = 0, _14 = Object.keys(best_shoe); _13 < _14.length; _13++) {
+                            var key = _14[_13];
                             best_shoe[key] /= c;
                         }
-                        for (var _r = 0, recs_3 = recs; _r < recs_3.length; _r++) {
-                            var key = recs_3[_r];
+                        for (var _15 = 0, recs_3 = recs; _15 < recs_3.length; _15++) {
+                            var key = recs_3[_15];
                             user.preference.push(key);
                         }
                         user.preference = rank_by_review_score(user.preference, best_shoe);
@@ -853,32 +1047,32 @@ responseMap['/improve'] = function (response, request) {
                     case "Interaction": {
                         var best_shoe = void 0;
                         var c = 0;
-                        for (var _s = 0, wishlisted_3 = wishlisted; _s < wishlisted_3.length; _s++) {
-                            var key = wishlisted_3[_s];
+                        for (var _16 = 0, wishlisted_6 = wishlisted; _16 < wishlisted_6.length; _16++) {
+                            var key = wishlisted_6[_16];
                             var shoe = shoes[key];
                             if (!shoe)
                                 continue; //throw "interaction, invalid shoe id "+key;
                             if (typeof best_shoe == "undefined") {
                                 best_shoe = {};
-                                for (var _t = 0, _u = Object.keys(shoe.interaction_embeddings); _t < _u.length; _t++) {
-                                    var image_key = _u[_t];
+                                for (var _17 = 0, _18 = Object.keys(shoe.interaction_embeddings); _17 < _18.length; _17++) {
+                                    var image_key = _18[_17];
                                     best_shoe[image_key] = parseFloat(shoe.interaction_embeddings[image_key]);
                                 }
                             }
                             else {
-                                for (var _v = 0, _w = Object.keys(best_shoe); _v < _w.length; _v++) {
-                                    var key_3 = _w[_v];
+                                for (var _19 = 0, _20 = Object.keys(best_shoe); _19 < _20.length; _19++) {
+                                    var key_3 = _20[_19];
                                     best_shoe[key_3] += parseFloat(shoe.interaction_embeddings[key_3]);
                                 }
                             }
                             c++;
                         }
-                        for (var _x = 0, recs_4 = recs; _x < recs_4.length; _x++) {
-                            var key = recs_4[_x];
+                        for (var _21 = 0, recs_4 = recs; _21 < recs_4.length; _21++) {
+                            var key = recs_4[_21];
                             user.preference.push(key);
                         }
-                        for (var _y = 0, _z = Object.keys(best_shoe); _y < _z.length; _y++) {
-                            var key = _z[_y];
+                        for (var _22 = 0, _23 = Object.keys(best_shoe); _22 < _23.length; _22++) {
+                            var key = _23[_22];
                             best_shoe[key] /= c;
                         }
                         user.preference = rank_by_review_score(user.preference, best_shoe);
