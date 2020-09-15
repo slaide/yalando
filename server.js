@@ -2,6 +2,74 @@ var http = require("http");
 var fs = require("fs");
 var url = require("url");
 var querystring = require("querystring");
+function add(a, b, undefinedIsZero) {
+    var res;
+    if (Array.isArray(a) && Array.isArray(b)) {
+        res = a.slice();
+    }
+    else {
+        res = {};
+    }
+    var objectKeys = Object.keys(a);
+    for (var _i = 0, objectKeys_1 = objectKeys; _i < objectKeys_1.length; _i++) {
+        var key = objectKeys_1[_i];
+        if (undefinedIsZero) {
+            res[key] = (a[key] || 0) + (b[key] || 0);
+        }
+        else {
+            res[key] = a[key] + b[key];
+        }
+    }
+    return res;
+}
+function sub(a, b, undefinedIsZero) {
+    var res;
+    if (Array.isArray(a) && Array.isArray(b)) {
+        res = a.slice();
+    }
+    else {
+        res = {};
+    }
+    var objectKeys = Object.keys(a);
+    if (undefinedIsZero) {
+        for (var _i = 0, objectKeys_2 = objectKeys; _i < objectKeys_2.length; _i++) {
+            var key = objectKeys_2[_i];
+            res[key] = (a[key] || 0) - (b[key] || 0);
+        }
+    }
+    else {
+        for (var _a = 0, objectKeys_3 = objectKeys; _a < objectKeys_3.length; _a++) {
+            var key = objectKeys_3[_a];
+            res[key] = a[key] - b[key];
+        }
+    }
+    return res;
+}
+function div(a, b) {
+    var res;
+    if (Array.isArray(a)) {
+        res = a.slice();
+    }
+    else {
+        res = {};
+    }
+    for (var _i = 0, _a = Object.keys(a); _i < _a.length; _i++) {
+        var key = _a[_i];
+        res[key] = a[key] / b;
+    }
+    return res;
+}
+function vec_length(a) {
+    var res = 0;
+    for (var _i = 0, _a = Object.keys(a); _i < _a.length; _i++) {
+        var key = _a[_i];
+        res += Math.pow(a[key], 2);
+    }
+    res = Math.sqrt(res);
+    if (isNaN(res))
+        throw new Error("value is nan");
+    return res;
+}
 function min(a, b) {
     if (b === void 0) { b = undefined; }
     if (typeof b == "undefined" && Array.isArray(a)) {
@@ -172,6 +240,9 @@ function shoe_fits_gender(shoe, gender) {
     }
     return true;
 }
+var whole_distance_review = 73221452.55327035;
+var whole_distance_interaction = 472969217.0292394;
+var whole_distance_image = 155519612.9514396;
 function init_shoes() {
     var shoes_ret = {};
     var shoe_path = "./shoes.json";
@@ -325,6 +396,23 @@ function init_shoes() {
         console.log("saving generated data..");
         fs.writeFileSync("./shoes.json", JSON.stringify(shoes_ret), utf8);
         console.log("saved");
+    }
+    if (false) {
+        var shoe_keys = Object.keys(shoes_ret);
+        var outer = 0;
+        for (var _x = 0, shoe_keys_5 = shoe_keys; _x < shoe_keys_5.length; _x++) {
+            var key1 = shoe_keys_5[_x];
+            for (var _y = 0, shoe_keys_6 = shoe_keys; _y < shoe_keys_6.length; _y++) {
+                var key2 = shoe_keys_6[_y];
+                if (key1 == key2)
+                    break;
+                whole_distance_review += vec_length(sub(shoes_ret[key1].review_embeddings, shoes_ret[key2].review_embeddings));
+                whole_distance_interaction += vec_length(sub(shoes_ret[key1].interaction_embeddings, shoes_ret[key2].interaction_embeddings));
+                whole_distance_image += vec_length(sub(shoes_ret[key1].image_embeddings, shoes_ret[key2].image_embeddings));
+            }
+            outer += 1;
+            console.log(outer);
+        }
     }
     return shoes_ret;
 }

@@ -3,6 +3,86 @@ const fs=require("fs");
 const url=require("url");
 const querystring=require("querystring");
 
+interface NumberIndexedByString{
+  [key:string]:number;
+}
+interface NumberIndexedByNumber{
+  [key:number]:number;
+}
+interface NumberIndexedByNumberIndexedByString{
+  [key:string]:NumberIndexedByNumber;
+}
+interface NumberIndexedByStringIndexedByString{
+  [key:string]:NumberIndexedByString;
+}
+type NumberIndexedBy=NumberIndexedByString|NumberIndexedByNumber|NumberIndexedByNumberIndexedByString|NumberIndexedByStringIndexedByString;
+
+function add(a:NumberIndexedBy,b:NumberIndexedBy,undefinedIsZero?:boolean):NumberIndexedBy{
+  let res;
+  if(Array.isArray(a) && Array.isArray(b)){
+    res=a.slice();
+  }else{
+    res={};
+  }
+
+  let objectKeys=Object.keys(a);
+
+  for(const key of objectKeys){
+    if(undefinedIsZero){
+      res[key]=(a[key]||0)+(b[key]||0);
+    }else{
+      res[key]=a[key]+b[key];
+    }
+  }
+
+  return res;
+}
+function sub(a:NumberIndexedBy,b:NumberIndexedBy,undefinedIsZero?:boolean):NumberIndexedBy{
+  let res;
+  if(Array.isArray(a) && Array.isArray(b)){
+    res=a.slice();
+  }else{
+    res={};
+  }
+
+  let objectKeys=Object.keys(a);
+
+  if(undefinedIsZero){
+    for(const key of objectKeys){
+      res[key]=(a[key]||0)-(b[key]||0);
+    }
+  }else{
+    for(const key of objectKeys){
+      res[key]=a[key]-b[key];
+    }
+  }
+
+  return res;
+}
+function div(a:NumberIndexedBy,b:number):NumberIndexedBy{
+  let res;
+  if(Array.isArray(a)){
+    res=a.slice();
+  }else{
+    res={};
+  }
+
+  for(const key of Object.keys(a)){
+    res[key]=a[key]/b;
+  }
+
+  return res;
+}
+function vec_length(a:NumberIndexedBy):number{
+  let res=0;
+  for(const key of Object.keys(a)){
+    res+=a[key]**2;
+  }
+  res=Math.sqrt(res);
+  if(isNaN(res)) throw new Error("value is nan");
+  return res;
+}
+
 function min(a,b=undefined){
   if(typeof b == "undefined" && Array.isArray(a)){
     let minimum=a[0];
@@ -159,6 +239,10 @@ function shoe_fits_gender(shoe,gender){
   return true;
 }
 
+let whole_distance_review=73221452.55327035;
+let whole_distance_interaction=472969217.0292394;
+let whole_distance_image=155519612.9514396;
+
 function init_shoes(){
 
     let shoes_ret={};
@@ -275,26 +359,26 @@ function init_shoes(){
 			}
 			console.log("#shoes with interaction embeddings",Object.keys(shoes_ret).length);
 
-	        let keys=Object.keys(shoes_ret);
-	        for(let key of keys){
-	            let s=shoes_ret[key];
+      let keys=Object.keys(shoes_ret);
+      for(let key of keys){
+          let s=shoes_ret[key];
 
-	            let file;
-	            try{
-	                const filename="./data/adi_ftw_photo/"+s.id+".png";
-	                file=fs.readFileSync(filename,binary);
-	                s.image_filename=filename;
-	            }catch{
-	                try{
-	                    const filename="./data/adi_ftw_3d/"+s.id+".png";
-	                    file=fs.readFileSync(filename,binary);
-	                    s.image_filename=filename;
-	                }catch{
-	                    delete shoes_ret[s.id];
-	                }
+          let file;
+          try{
+              const filename="./data/adi_ftw_photo/"+s.id+".png";
+              file=fs.readFileSync(filename,binary);
+              s.image_filename=filename;
+          }catch{
+              try{
+                  const filename="./data/adi_ftw_3d/"+s.id+".png";
+                  file=fs.readFileSync(filename,binary);
+                  s.image_filename=filename;
+              }catch{
+                  delete shoes_ret[s.id];
+              }
 
-	            }
-	        }
+          }
+      }
 
 			console.log("#shoes with image",Object.keys(shoes_ret).length);
 
@@ -315,6 +399,38 @@ function init_shoes(){
       console.log("saving generated data..");
       fs.writeFileSync("./shoes.json",JSON.stringify(shoes_ret), utf8);
       console.log("saved");
+    }
+
+    if(false){
+      const shoe_keys=Object.keys(shoes_ret);
+
+      let outer=0;
+      for(const key1 of shoe_keys){
+        for(const key2 of shoe_keys){
+          if(key1==key2) break;
+
+          whole_distance_review+=vec_length(
+            sub(
+              shoes_ret[key1].review_embeddings,
+              shoes_ret[key2].review_embeddings
+            )
+          );
+          whole_distance_interaction+=vec_length(
+            sub(
+              shoes_ret[key1].interaction_embeddings,
+              shoes_ret[key2].interaction_embeddings
+            )
+          );
+          whole_distance_image+=vec_length(
+            sub(
+              shoes_ret[key1].image_embeddings,
+              shoes_ret[key2].image_embeddings
+            )
+          );
+        }
+        outer+=1;
+        console.log(outer);
+      }
     }
 
     return shoes_ret;
