@@ -416,6 +416,7 @@ function init_shoes() {
     }
     return shoes_ret;
 }
+//console.log(whole_distance_image,whole_distance_review,whole_distance_interaction);
 var shoes = init_shoes();
 var shoe_ids = Object.keys(shoes);
 console.log("fit shoes found: ", shoe_ids.length);
@@ -1035,9 +1036,9 @@ responseMap['/improve'] = function (response, request) {
                         var embedding = temp_embeddings_3[_z];
                         interaction_scores.push(embedding, average_embedding);
                     }
-                    var abs_image = abs(sum(sum(image_scores)));
-                    var abs_review = abs(sum(sum(review_scores)));
-                    var abs_interaction = abs(sum(sum(interaction_scores)));
+                    var abs_image = abs(sum(sum(image_scores))) / whole_distance_image;
+                    var abs_review = abs(sum(sum(review_scores))) / whole_distance_review;
+                    var abs_interaction = abs(sum(sum(interaction_scores))) / whole_distance_interaction;
                     var abs_vector = [abs_image, abs_review, abs_interaction];
                     switch (abs_vector.indexOf(min(abs_vector))) {
                         case 0: {

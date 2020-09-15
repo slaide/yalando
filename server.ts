@@ -436,6 +436,8 @@ function init_shoes(){
     return shoes_ret;
 }
 
+//console.log(whole_distance_image,whole_distance_review,whole_distance_interaction);
+
 const shoes:Object=init_shoes();
 const shoe_ids:string[]=Object.keys(shoes);
 console.log("fit shoes found: ",shoe_ids.length);
@@ -1017,9 +1019,9 @@ responseMap['/improve']=function(response:typeof http.ServerResponse,request:typ
             interaction_scores.push(embedding,average_embedding);
           }
 
-          const abs_image=abs(sum(sum(image_scores)));
-          const abs_review=abs(sum(sum(review_scores)));
-          const abs_interaction=abs(sum(sum(interaction_scores)));
+          const abs_image=abs(sum(sum(image_scores)))/whole_distance_image;
+          const abs_review=abs(sum(sum(review_scores)))/whole_distance_review;
+          const abs_interaction=abs(sum(sum(interaction_scores)))/whole_distance_interaction;
 
           const abs_vector=[abs_image,abs_review,abs_interaction];
           switch(abs_vector.indexOf(min(abs_vector))){
