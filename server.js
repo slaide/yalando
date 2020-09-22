@@ -679,9 +679,11 @@ function get_user_recommendations(user) {
                 }
             }
             //discard football shoes if user does not explicitely search for football shoes
-            if (user_query_words.indexOf("soccer") == -1 && shoe.category == "FOOTBALL/SOCCER")
+            if (user_query_words.indexOf("soccer") == -1 && user_query_words.indexOf("football") == -1 && shoe.category == "FOOTBALL/SOCCER")
                 discard_shoe = true;
             if (user_query_words.indexOf("basketball") == -1 && shoe.category == "BASKETBALL")
+                discard_shoe = true;
+            if (user_query_words.indexOf("football") == -1 && shoe.category == "AMERICAN FOOTBALL")
                 discard_shoe = true;
             if (discard_shoe)
                 continue;
